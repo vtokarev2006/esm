@@ -1,10 +1,12 @@
-package com.epam.esm.repository.mysql;
+package com.epam.esm.repository.jdbctemplate;
 
 import com.epam.esm.domain.Tag;
+import com.epam.esm.domain.dto.TagOrdersPriceDto;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.rowmappers.TagRowMapper;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -17,8 +19,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
-public class TagRepositoryImpl implements TagRepository {
+@Qualifier("TagRepositoryJdbcTemplate")
+public class TagRepositoryJdbcTemplate implements TagRepository {
 
     private static final String SQL_GET_BY_ID = "SELECT * FROM tags WHERE id = ?";
     private static final String SQL_GET_BY_NAME = "SELECT * FROM tags WHERE name = ?";
@@ -29,6 +31,11 @@ public class TagRepositoryImpl implements TagRepository {
     private static final String SQL_UPDATE_BY_ID = "UPDATE tags SET name = ? WHERE id = ?";
 
     final private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public TagRepositoryJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public Optional<Tag> get(long id) {
@@ -57,8 +64,8 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public boolean update(Tag tag) {
-        return jdbcTemplate.update(SQL_UPDATE_BY_ID, tag.getName(), tag.getId()) > 0;
+    public void update(Tag tag) {
+        jdbcTemplate.update(SQL_UPDATE_BY_ID, tag.getName(), tag.getId());
     }
 
     @Override
@@ -69,6 +76,11 @@ public class TagRepositoryImpl implements TagRepository {
     @Override
     public Tag findByName(String name) {
         return jdbcTemplate.queryForObject(SQL_GET_BY_NAME, new TagRowMapper(), name);
+    }
+
+    @Override
+    public List<TagOrdersPriceDto> getTagSumOrdersPrice(long userId) {
+        throw new UnsupportedOperationException("TagRepositoryJdbcTemplate - getTagWithMaxSumOrdersPrice");
     }
 
 }

@@ -4,9 +4,9 @@ import com.epam.esm.domain.Certificate;
 import com.epam.esm.repository.CertificateRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -29,8 +29,12 @@ public class CertificateService {
         return certificateRepository.get(id).orElseThrow(() -> new EmptyResultDataAccessException(1));
     }
 
-    public boolean update(Certificate certificate) {
-        return certificateRepository.update(certificate);
+    public void update(Certificate certificate) {
+        certificateRepository.update(certificate);
+    }
+
+    public void patchFields(long id, Map<String, String> fields){
+        certificateRepository.patchFields(id, fields);
     }
 
     public boolean delete(long id) {
@@ -40,4 +44,6 @@ public class CertificateService {
     public Certificate create(Certificate certificate) {
         return certificateRepository.create(certificate);
     }
+
+
 }

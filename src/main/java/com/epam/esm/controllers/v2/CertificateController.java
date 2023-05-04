@@ -1,8 +1,10 @@
-package com.epam.esm.controllers;
+package com.epam.esm.controllers.v2;
 
 import com.epam.esm.domain.Certificate;
+import com.epam.esm.exceptions.BadRequestException;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.services.CertificateService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,13 +14,15 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("api/v1/certificates")
+@RestController("CertificateControllerV2")
+@RequestMapping("api/v2/certificates")
 public class CertificateController {
     private final CertificateService certificateService;
 
+    @Autowired
     public CertificateController(CertificateService certificateService) {
         this.certificateService = certificateService;
     }
@@ -43,8 +47,7 @@ public class CertificateController {
 
     @PutMapping
     public ResponseEntity<String> update(@RequestBody Certificate certificate) {
-        if (!certificateService.update(certificate))
-            throw new ResourceDoesNotExistException("Certificate not found, certificateId = " + certificate.getId());
+        certificateService.update(certificate);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -64,5 +67,14 @@ public class CertificateController {
                 .buildAndExpand(newCert.getId())
                 .toUri();
         return ResponseEntity.status(HttpStatus.CREATED).header(HttpHeaders.LOCATION, String.valueOf(location)).build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<String> patchFields(@PathVariable long id, @RequestBody Map<String, String> fields) {
+        if (fields == null || fields.isEmpty() || id <= 0) {
+            throw new BadRequestException("Wrong format for patch Certificate, id = " + id);
+        }
+        certificateService.patchFields(id, fields);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

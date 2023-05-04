@@ -1,13 +1,15 @@
-package com.epam.esm.controllers;
+package com.epam.esm.controllers.v1;
 
 import com.epam.esm.domain.Tag;
-import com.epam.esm.exceptions.BadRequestException;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.services.TagService;
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -19,10 +21,14 @@ import java.util.List;
 public class TagController {
 
     final private TagService tagService;
+    final private EntityManager em;
 
-    public TagController(TagService tagService) {
+    @Autowired
+    public TagController(TagService tagService, EntityManager em) {
         this.tagService = tagService;
+        this.em = em;
     }
+
 
     @GetMapping("/{id}")
     public Tag getById(@PathVariable long id) {
@@ -56,4 +62,21 @@ public class TagController {
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping("/test")
+    @Transactional
+    public void test() {
+        Tag tag1 = em.find(Tag.class, 14);
+        tag1.setName(tag1.getName() + "upd-new-JPA");
+        System.out.println("tag1 is in context = " + em.contains(tag1));
+        Tag tag2 = Tag.builder().name("Tag1-new-JPA").build();
+        em.persist(tag2);
+        System.out.println("tag2 is in context = " + em.contains(tag2));
+    }
+
+    @GetMapping("/maxSumOrdersPrice")
+    public Tag getTagWithMaxSumOrdersPrice(@RequestParam long userId) {
+        return tagService.getTagWithMaxSumOrdersPrice(userId);
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.epam.esm.repository.mysql;
+package com.epam.esm.repository.jdbctemplate;
 
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Tag;
@@ -7,8 +7,10 @@ import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.rowmappers.CertificateWithTagsResultSetExtractor;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
 import org.javatuples.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,8 +28,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
-@RequiredArgsConstructor
-public class CertificateRepositoryImpl implements com.epam.esm.repository.CertificateRepository {
+@Qualifier("CertificateRepositoryJdbcTemplate")
+public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repository.CertificateRepository {
 
     final static private String SQL_GET_ALL_CERTIFICATES_WITH_TAGS = """
             SELECT c.*, t.id as tag_id, t.name as tag_name
@@ -52,7 +54,18 @@ public class CertificateRepositoryImpl implements com.epam.esm.repository.Certif
     final private TagRepository tagRepository;
     final private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+    private final EntityManager em;
+
     final private DataSource dataSource;
+
+    @Autowired
+    public CertificateRepositoryJdbcTemplate(JdbcTemplate jdbcTemplate, @Qualifier("TagRepositoryJdbcTemplate") TagRepository tagRepository, NamedParameterJdbcTemplate namedParameterJdbcTemplate, EntityManager em, DataSource dataSource) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.tagRepository = tagRepository;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.em = em;
+        this.dataSource = dataSource;
+    }
 
     @Override
     public List<Certificate> findByTagName(String tagName) {
@@ -118,7 +131,31 @@ public class CertificateRepositoryImpl implements com.epam.esm.repository.Certif
         sqlStr += whereStr;
 
         sqlStr += orderBy.isEmpty() ? " ORDER BY c.id" : " ORDER BY " + orderBy.get() + " " + orderDirection + ", c.id";
-        return  namedParameterJdbcTemplate.query(sqlStr, params, new CertificateWithTagsResultSetExtractor());
+        return namedParameterJdbcTemplate.query(sqlStr, params, new CertificateWithTagsResultSetExtractor());
+    }
+
+    @Transactional
+    @Override
+    public void patchFields(long id, Map<String, String> fields) {
+        Integer duration;
+        Double price;
+        try {
+            duration = fields.get("duration") != null ? Integer.valueOf(fields.get("duration")) : null;
+            price = fields.get("price") != null ? Double.valueOf(fields.get("price")) : null;
+        } catch (NumberFormatException e){
+            throw new BadRequestException("Certificate patch request is malformed, id = " + id);
+        }
+        Certificate certificate = em.find(Certificate.class, id);
+        if (certificate == null)
+            throw new ResourceDoesNotExistException("Certificate doesnt exist, id = ");
+
+        if (duration != null) {
+            certificate.setDuration(duration);
+        }
+
+        if (price != null) {
+            certificate.setPrice(price);
+        }
     }
 
 
@@ -147,11 +184,11 @@ public class CertificateRepositoryImpl implements com.epam.esm.repository.Certif
 
     @Transactional
     @Override
-    public boolean update(Certificate certificate) {
+    public void update(Certificate certificate) {
         if (certificate == null || certificate.getId() == 0)
             throw new BadRequestException("Certificate object malformed in the request or it has id = 0");
 
-        List<Certificate> listForDbCert = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS ,
+        List<Certificate> listForDbCert = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS,
                 new CertificateWithTagsResultSetExtractor(), certificate.getId());
 
         if (listForDbCert == null || listForDbCert.isEmpty())
@@ -169,8 +206,6 @@ public class CertificateRepositoryImpl implements com.epam.esm.repository.Certif
 
         deleteTags(certificate, tagsInCertificate, tagIdsInCertsHaveTags);
         updateTagsInDb(certificate, tagsInCertificate, tagsInDB, tagIdsInCertsHaveTags);
-
-        return true;
     }
 
     private Map<Long, Tag> getTagsInDbMap() {

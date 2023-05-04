@@ -1,8 +1,10 @@
 package com.epam.esm.repository;
 
 import com.epam.esm.domain.Certificate;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface CertificateRepository extends GenericRepository<Certificate> {
@@ -15,4 +17,8 @@ public interface CertificateRepository extends GenericRepository<Certificate> {
                                     Optional<String> description,
                                     Optional<String> orderBy,
                                     String orderDirection);
+
+    void patchFields(long id, Map<String, String> fields);
+
 }
+
