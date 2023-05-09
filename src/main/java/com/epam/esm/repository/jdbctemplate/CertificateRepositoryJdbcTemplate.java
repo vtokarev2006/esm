@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -98,7 +99,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     }
 
     @Override
-    public List<Certificate> getAll() {
+    public List<Certificate> getAll(Pageable pageable) {
         return getAll(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), "ASC");
     }
 
@@ -136,7 +137,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
 
     @Transactional
     @Override
-    public void patchFields(long id, Map<String, String> fields) {
+    public Certificate patchFields(long id, Map<String, String> fields) {
         Integer duration;
         Double price;
         try {
@@ -145,9 +146,14 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         } catch (NumberFormatException e){
             throw new BadRequestException("Certificate patch request is malformed, id = " + id);
         }
+
         Certificate certificate = em.find(Certificate.class, id);
         if (certificate == null)
             throw new ResourceDoesNotExistException("Certificate doesnt exist, id = ");
+
+        if (duration == null && price == null)
+            throw new BadRequestException("Nothing to update for certificate id = " + id);
+
 
         if (duration != null) {
             certificate.setDuration(duration);
@@ -156,6 +162,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         if (price != null) {
             certificate.setPrice(price);
         }
+        return certificate;
     }
 
 
@@ -173,6 +180,8 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         parameters.put("create_date", now);
         parameters.put("last_update_date", now);
         certificate.setId(simpleJdbcInsert.executeAndReturnKey(parameters).longValue());
+        certificate.setCreateDate(now);
+        certificate.setLastUpdateDate(now);
 
         final List<Tag> tagsInCertificate = certificate.getTags();
         final Map<Long, Tag> tagsInDB = getTagsInDbMap();
@@ -209,7 +218,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     }
 
     private Map<Long, Tag> getTagsInDbMap() {
-        return tagRepository.getAll()
+        return tagRepository.getAll(Pageable.unpaged())
                 .stream()
                 .collect(Collectors.toMap(Tag::getId, Function.identity()));
     }

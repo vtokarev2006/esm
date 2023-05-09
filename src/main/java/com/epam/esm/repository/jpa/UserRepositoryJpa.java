@@ -5,6 +5,7 @@ import com.epam.esm.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class UserRepositoryJpa implements UserRepository {
     }
 
     @Override
-    public List<User> getAll() {
+    public List<User> getAll(Pageable pageable) {
         return em.createNamedQuery("get all users", User.class).getResultList();
     }
 

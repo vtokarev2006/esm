@@ -10,6 +10,8 @@ import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.OrderRepository;
 import com.epam.esm.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,22 +22,30 @@ import java.util.Optional;
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final com.epam.esm.repository.springdata.OrderRepository orderRepositorySpringData;
     private final UserRepository userRepository;
     private final CertificateRepository certificateRepository;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository, CertificateRepository certificateRepository) {
+    public OrderService(OrderRepository orderRepository, com.epam.esm.repository.springdata.OrderRepository orderRepositorySpringData, UserRepository userRepository, CertificateRepository certificateRepository) {
         this.orderRepository = orderRepository;
+        this.orderRepositorySpringData = orderRepositorySpringData;
         this.userRepository = userRepository;
         this.certificateRepository = certificateRepository;
     }
 
     public List<Order> getAll() {
-        return orderRepository.getAll();
+        return orderRepository.getAll(Pageable.unpaged());
     }
 
     public List<Order> getByUserId(long userId) {
         return orderRepository.getByUserId(userId);
+    }
+
+    public Page<Order> getByUserId(Optional<Long> userId, Pageable pageable) {
+        return userId.isPresent() ? orderRepositorySpringData.findByUserId(userId.get(), pageable)
+                : orderRepositorySpringData.findAll(pageable);
+
     }
 
     @Transactional

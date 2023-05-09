@@ -6,6 +6,7 @@ import com.epam.esm.repository.TagRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class TagRepositoryJpa implements TagRepository {
     }
 
     @Override
-    public List<Tag> getAll() {
+    public List<Tag> getAll(Pageable pageable) {
         return null;
     }
 

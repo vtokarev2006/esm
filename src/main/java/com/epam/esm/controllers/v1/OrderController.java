@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {

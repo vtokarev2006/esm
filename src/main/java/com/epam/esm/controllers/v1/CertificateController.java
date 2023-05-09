@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Deprecated
 @RestController
 @RequestMapping("api/v1/certificates")
 public class CertificateController {

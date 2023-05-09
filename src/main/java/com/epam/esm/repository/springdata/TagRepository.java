@@ -1,13 +1,12 @@
 package com.epam.esm.repository.springdata;
 
 import com.epam.esm.domain.Tag;
-
-import jakarta.persistence.Tuple;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.Map;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
         @Query("select t, count(o) as freq from Order o join User u on(o.user = u) join Certificate c on (o.certificate = c) join c.tags t where u.id = :userId group by t order by freq desc")
@@ -37,6 +36,6 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 */
 
 
-        List<Tag> getTagsOrderedDescByFreqUsageByUserId(long userId);
+        List<Tag> getTagsOrderedDescByFreqUsageByUserId(long userId, Pageable pageable);
 
 }

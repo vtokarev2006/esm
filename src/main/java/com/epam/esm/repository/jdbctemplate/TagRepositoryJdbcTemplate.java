@@ -8,6 +8,7 @@ import com.epam.esm.repository.rowmappers.TagRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -43,7 +44,7 @@ public class TagRepositoryJdbcTemplate implements TagRepository {
     }
 
     @Override
-    public List<Tag> getAll() {
+    public List<Tag> getAll(Pageable pageable) {
         return jdbcTemplate.query(SQL_GET_ALL, new TagRowMapper());
     }
 

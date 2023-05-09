@@ -16,7 +16,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "orders")
 @NamedQuery(query = "select o from Order o", name = "Order_getAll")
-@NamedQuery(query = "select o from Order o where o.user.id=:userId", name = "Order_getByUserId")
+@NamedQuery(query = "select o from Order o where o.user.id = :userId", name = "Order_getByUserId")
 
 public class Order implements Serializable {
     @Id

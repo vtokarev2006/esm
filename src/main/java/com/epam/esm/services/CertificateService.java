@@ -3,18 +3,20 @@ package com.epam.esm.services;
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.repository.CertificateRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CertificateService {
     private final CertificateRepository certificateRepository;
+    private final com.epam.esm.repository.springdata.CertificateRepository certificateRepositorySpringData;
 
-    public CertificateService(CertificateRepository certificateRepository) {
+    public CertificateService(CertificateRepository certificateRepository, com.epam.esm.repository.springdata.CertificateRepository certificateRepositorySpringData) {
         this.certificateRepository = certificateRepository;
+        this.certificateRepositorySpringData = certificateRepositorySpringData;
     }
 
     public List<Certificate> getAll(Optional<String> tagName,
@@ -22,8 +24,17 @@ public class CertificateService {
                                     Optional<String> description,
                                     Optional<String> orderBy,
                                     String orderDirection) {
+
         return certificateRepository.getAll(tagName, name, description, orderBy, orderDirection);
     }
+    public Page<Certificate> getAll(Optional<String> name,
+                                    Optional<String> description,
+                                    Set<String> tagNames,
+                                    Pageable pageable) {
+        return certificateRepositorySpringData.findCertificateByNameDescriptionTagNames(name, description, tagNames, pageable);
+    }
+
+
 
     public Certificate get(long id) {
         return certificateRepository.get(id).orElseThrow(() -> new EmptyResultDataAccessException(1));
@@ -33,8 +44,8 @@ public class CertificateService {
         certificateRepository.update(certificate);
     }
 
-    public void patchFields(long id, Map<String, String> fields){
-        certificateRepository.patchFields(id, fields);
+    public Certificate patchFields(long id, Map<String, String> fields) {
+        return certificateRepository.patchFields(id, fields);
     }
 
     public boolean delete(long id) {

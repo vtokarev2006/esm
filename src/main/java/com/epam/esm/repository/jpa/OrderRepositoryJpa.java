@@ -5,6 +5,7 @@ import com.epam.esm.repository.OrderRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ public class OrderRepositoryJpa implements OrderRepository {
     }
 
     @Override
-    public List<Order> getAll() {
+    public List<Order> getAll(Pageable pageable) {
         return em.createNamedQuery("Order_getAll", Order.class).getResultList();
     }
 

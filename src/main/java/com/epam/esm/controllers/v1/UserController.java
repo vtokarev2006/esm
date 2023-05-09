@@ -6,6 +6,8 @@ import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.services.OrderService;
 import com.epam.esm.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 @RestController
 @RequestMapping("api/v1/users")
 public class UserController {
@@ -36,8 +39,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAll() {
-        return userService.getAll();
+    public Page<User> getAll(Pageable pageable) {
+        return userService.getAll(pageable);
     }
 
     @GetMapping("/{userId}/orders")

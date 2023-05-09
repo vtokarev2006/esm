@@ -16,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+@Deprecated
 @RestController
 @RequestMapping("api/v1/tags")
 public class TagController {

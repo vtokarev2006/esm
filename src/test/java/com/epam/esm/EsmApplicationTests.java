@@ -4,6 +4,7 @@ import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Order;
 import com.epam.esm.domain.Tag;
 import com.epam.esm.domain.User;
+import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.repository.OrderRepository;
 import com.epam.esm.repository.springdata.CertificateRepository;
 import com.epam.esm.repository.springdata.TagRepository;
@@ -13,7 +14,9 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.Instant;
 import java.util.*;
@@ -54,12 +57,17 @@ class EsmApplicationTests {
 
     @Test
     void contextLoads() {
-        User user = userRepositorySpringData.getUsersOrderedByOrdersCostDesc(PageRequest.of(0,1)).get(0);
-        List<Tag> tags = tagRepository.getTagsOrderedDescByFreqUsageByUserId(user.getId());
 
 
-        System.out.println(user);
-        System.out.println(tags);
+
+/*
+        User user = userRepositorySpringData
+                .getUsersOrderedByOrdersCostDesc(PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceDoesNotExistException("No users with orders"));
+
+*/
 
 //        tags.forEach(System.out::println);
 
@@ -74,6 +82,7 @@ class EsmApplicationTests {
         TestTransaction.end();
 */
     }
+
     void addOrders() {
         Random r = new Random();
         List<User> users = userRepository.findAll();
