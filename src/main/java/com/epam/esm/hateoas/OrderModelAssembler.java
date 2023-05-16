@@ -1,6 +1,6 @@
 package com.epam.esm.hateoas;
 
-import com.epam.esm.controllers.v2.OrderController;
+import com.epam.esm.controllers.OrderController;
 import com.epam.esm.domain.Order;
 import org.springframework.beans.BeanUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;

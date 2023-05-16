@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class CertificateWithTagsResultSetExtractor implements ResultSetExtractor<List<Certificate>> {
     @Override
     public List<Certificate> extractData(ResultSet rs) throws SQLException, DataAccessException {

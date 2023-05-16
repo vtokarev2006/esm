@@ -11,9 +11,9 @@ import jakarta.persistence.EntityManager;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -24,12 +24,22 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Repository
-@Qualifier("CertificateRepositoryJdbcTemplate")
+@Profile("dev")
 public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repository.CertificateRepository {
 
     final static private String SQL_GET_ALL_CERTIFICATES_WITH_TAGS = """
@@ -50,13 +60,10 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
             where c.id = ?""";
 
     final static private String SQL_DELETE_BY_ID = "DELETE FROM certificates WHERE id = ?";
-
     final private JdbcTemplate jdbcTemplate;
     final private TagRepository tagRepository;
     final private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
     private final EntityManager em;
-
     final private DataSource dataSource;
 
     @Autowired
@@ -69,27 +76,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     }
 
     @Override
-    public List<Certificate> findByTagName(String tagName) {
-        return null;
-    }
-
-    @Override
-    public List<Certificate> findByNameContainingString(String text) {
-        return null;
-    }
-
-    @Override
-    public List<Certificate> sortByName(boolean asc) {
-        return null;
-    }
-
-    @Override
-    public List<Certificate> sortByDate(boolean asc) {
-        return null;
-    }
-
-    @Override
-    public Optional<Certificate> get(long id) {
+    public Optional<Certificate> findById(long id) {
         List<Certificate> list = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS, new CertificateWithTagsResultSetExtractor(), id);
         if (list == null || list.isEmpty()) {
             throw new EmptyResultDataAccessException(1);
@@ -98,17 +85,11 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         }
     }
 
-    @Override
-    public List<Certificate> getAll(Pageable pageable) {
-        return getAll(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), "ASC");
+    public List<Certificate> fetchAll() {
+        return fetchCertificatesBySearchParams(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), "ASC");
     }
 
-    public List<Certificate> getAll(Optional<String> tagName,
-                                    Optional<String> name,
-                                    Optional<String> description,
-                                    Optional<String> orderBy,
-                                    String orderDirection) {
-
+    public List<Certificate> fetchCertificatesBySearchParams(Optional<String> tagName, Optional<String> name, Optional<String> description, Optional<String> orderBy, String orderDirection) {
         String sqlStr = SQL_GET_ALL_CERTIFICATES_WITH_TAGS;
 
         String whereStr = "";
@@ -137,23 +118,24 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
 
     @Transactional
     @Override
-    public Certificate patchFields(long id, Map<String, String> fields) {
+    public Certificate partialUpdate(long id, Map<String, String> fields) {
         Integer duration;
         Double price;
         try {
             duration = fields.get("duration") != null ? Integer.valueOf(fields.get("duration")) : null;
             price = fields.get("price") != null ? Double.valueOf(fields.get("price")) : null;
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             throw new BadRequestException("Certificate patch request is malformed, id = " + id);
         }
 
         Certificate certificate = em.find(Certificate.class, id);
-        if (certificate == null)
+        if (certificate == null) {
             throw new ResourceDoesNotExistException("Certificate doesnt exist, id = ");
+        }
 
-        if (duration == null && price == null)
+        if (duration == null && price == null) {
             throw new BadRequestException("Nothing to update for certificate id = " + id);
-
+        }
 
         if (duration != null) {
             certificate.setDuration(duration);
@@ -165,13 +147,11 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         return certificate;
     }
 
-
     @Transactional
     @Override
     public Certificate create(Certificate certificate) {
         Instant now = Instant.now();
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
-                .withTableName("certificates").usingGeneratedKeyColumns("id");
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource).withTableName("certificates").usingGeneratedKeyColumns("id");
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("name", certificate.getName());
         parameters.put("description", certificate.getDescription());
@@ -194,17 +174,16 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     @Transactional
     @Override
     public void update(Certificate certificate) {
-        if (certificate == null || certificate.getId() == 0)
+        if (certificate == null || certificate.getId() == 0) {
             throw new BadRequestException("Certificate object malformed in the request or it has id = 0");
+        }
 
-        List<Certificate> listForDbCert = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS,
-                new CertificateWithTagsResultSetExtractor(), certificate.getId());
-
-        if (listForDbCert == null || listForDbCert.isEmpty())
+        List<Certificate> listForDbCert = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS, new CertificateWithTagsResultSetExtractor(), certificate.getId());
+        if (listForDbCert == null || listForDbCert.isEmpty()) {
             throw new ResourceDoesNotExistException("Certificate id=" + certificate.getId() + " does not exist");
+        }
 
-        jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS + " FOR UPDATE",
-                new CertificateWithTagsResultSetExtractor(), listForDbCert.get(0).getId());
+        jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS + " FOR UPDATE", new CertificateWithTagsResultSetExtractor(), listForDbCert.get(0).getId());
 
         Pair<String, MapSqlParameterSource> query = buildUpdateQuery(certificate);
         namedParameterJdbcTemplate.update(query.getValue0(), query.getValue1());
@@ -218,9 +197,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     }
 
     private Map<Long, Tag> getTagsInDbMap() {
-        return tagRepository.getAll(Pageable.unpaged())
-                .stream()
-                .collect(Collectors.toMap(Tag::getId, Function.identity()));
+        return tagRepository.fetchAll().stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
     }
 
     private void updateTagsInDb(Certificate newCertificate, List<Tag> tagsInCertificate, Map<Long, Tag> tagsInDB, Set<Long> tagIdsInCertsHaveTags) {
@@ -253,13 +230,11 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
 
         Set<Long> tagIdsToRemove = new HashSet<>(tagIdsInCertsHaveTags);
         tagIdsToRemove.removeAll(tagIdsInCertificate);
-        tagIdsToRemove.forEach(id ->
-                jdbcTemplate.update("DELETE FROM certificates_have_tags WHERE certificate_id = ? AND tag_id = ?", newCertificate.getId(), id));
+        tagIdsToRemove.forEach(id -> jdbcTemplate.update("DELETE FROM certificates_have_tags WHERE certificate_id = ? AND tag_id = ?", newCertificate.getId(), id));
     }
 
     private void createCertHasTag(long cert_id, long tag_id) {
-        jdbcTemplate.update("INSERT INTO certificates_have_tags (certificate_id, tag_id) VALUES (?, ?)",
-                cert_id, tag_id);
+        jdbcTemplate.update("INSERT INTO certificates_have_tags (certificate_id, tag_id) VALUES (?, ?)", cert_id, tag_id);
     }
 
     private Pair<String, MapSqlParameterSource> buildUpdateQuery(Certificate certificate) {
@@ -291,9 +266,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
 
 
         StringJoiner sj = new StringJoiner(", ");
-        listField.stream()
-                .map(s -> s + "=:" + s)
-                .forEach(sj::add);
+        listField.stream().map(s -> s + "=:" + s).forEach(sj::add);
 
         String sb = "update certificates set " + sj + " where id=:id";
         return new Pair<>(sb, mapSqlParameterSource);

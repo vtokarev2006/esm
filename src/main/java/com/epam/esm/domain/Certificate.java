@@ -1,6 +1,15 @@
 package com.epam.esm.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,14 +28,10 @@ import java.util.List;
 public class Certificate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
+    private Long id;
     private String name;
-
     private String description;
-
     private Double price;
-
     private Integer duration;
 
     @Column(name = "create_date")
@@ -36,9 +41,6 @@ public class Certificate implements Serializable {
     private Instant lastUpdateDate;
 
     @ManyToMany(cascade = {CascadeType.MERGE})
-    @JoinTable(
-            name = "certificates_have_tags",
-            joinColumns = @JoinColumn(name = "certificate_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JoinTable(name = "certificates_have_tags", joinColumns = @JoinColumn(name = "certificate_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tags;
 }

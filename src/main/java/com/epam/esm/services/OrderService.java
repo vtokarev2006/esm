@@ -5,78 +5,59 @@ import com.epam.esm.domain.Order;
 import com.epam.esm.domain.User;
 import com.epam.esm.domain.dto.CreateOrderDto;
 import com.epam.esm.exceptions.BadRequestException;
-import com.epam.esm.exceptions.ResourceDoesNotExistException;
-import com.epam.esm.repository.CertificateRepository;
-import com.epam.esm.repository.OrderRepository;
-import com.epam.esm.repository.UserRepository;
+import com.epam.esm.repository.springdata.CertificateRepository;
+import com.epam.esm.repository.springdata.OrderRepository;
+import com.epam.esm.repository.springdata.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final com.epam.esm.repository.springdata.OrderRepository orderRepositorySpringData;
     private final UserRepository userRepository;
     private final CertificateRepository certificateRepository;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, com.epam.esm.repository.springdata.OrderRepository orderRepositorySpringData, UserRepository userRepository, CertificateRepository certificateRepository) {
+    public OrderService(OrderRepository orderRepository, UserRepository userRepository, CertificateRepository certificateRepository) {
         this.orderRepository = orderRepository;
-        this.orderRepositorySpringData = orderRepositorySpringData;
         this.userRepository = userRepository;
         this.certificateRepository = certificateRepository;
     }
 
-    public List<Order> getAll() {
-        return orderRepository.getAll(Pageable.unpaged());
-    }
-
-    public List<Order> getByUserId(long userId) {
-        return orderRepository.getByUserId(userId);
-    }
-
-    public Page<Order> getByUserId(Optional<Long> userId, Pageable pageable) {
-        return userId.isPresent() ? orderRepositorySpringData.findByUserId(userId.get(), pageable)
-                : orderRepositorySpringData.findAll(pageable);
-
-    }
-
     @Transactional
     public Order createOrder(CreateOrderDto createOrderDto) {
-        Optional<User> user = userRepository.get(createOrderDto.getUserId());
-        if (user.isEmpty())
+        Optional<User> user = userRepository.findById(createOrderDto.getUserId());
+        if (user.isEmpty()) {
             throw new BadRequestException("User doesnt exist, userId = " + createOrderDto.getUserId());
+        }
 
-        Optional<Certificate> certificate = certificateRepository.get(createOrderDto.getCertificateId());
-        if (certificate.isEmpty())
+        Optional<Certificate> certificate = certificateRepository.findById(createOrderDto.getCertificateId());
+        if (certificate.isEmpty()) {
             throw new BadRequestException("Certificate doesnt exist, certificateId = " + createOrderDto.getCertificateId());
+        }
 
-        Order order = Order.builder()
-                .certificate(certificate.get())
-                .user(user.get())
-                .price(certificate.get().getPrice())
-                .description(createOrderDto.getDescription())
-                .createDate(Instant.now())
-                .build();
-        return orderRepository.create(order);
+        Order order = Order.builder().certificate(certificate.get()).user(user.get()).price(certificate.get().getPrice()).description(createOrderDto.getDescription()).createDate(Instant.now()).build();
+        return orderRepository.save(order);
     }
 
-    public Order getByUserOrderId(long userId, long orderId) {
-        Optional<Order> order = orderRepository.get(orderId);
-
-        if (order.isEmpty())
-            throw new ResourceDoesNotExistException("Order doesnt exist, orderId = " + orderId);
-
-        if (order.get().getUser().getId() != userId)
-            throw new ResourceDoesNotExistException("User with userId = " + userId + " doesn't have Order with orderId = " + orderId);
-
-        return order.get();
+    public Page<Order> fetchByUserId(long userId, Pageable pageable) {
+        return orderRepository.findByUserId(userId, pageable);
     }
+
+    public Page<Order> fetchAll(Pageable pageable) {
+        return orderRepository.findAll(pageable);
+    }
+
+    public Order fetchById(long id) {
+        return orderRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException(1));
+    }
+
+
 }

@@ -1,4 +1,4 @@
-package com.epam.esm.controllers.v2;
+package com.epam.esm.controllers;
 
 import com.epam.esm.domain.User;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
@@ -21,10 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
-@RestController("UserControllerV2")
+@RestController
 @RequestMapping("api/v2/users")
 public class UserController {
-
     private final UserService userService;
     private final UserModelAssembler userModelAssembler;
     private final PagedResourcesAssembler<User> pagedUserResourcesAssembler;
@@ -37,16 +36,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserModel> get(@PathVariable long id) {
+    public ResponseEntity<UserModel> fetchById(@PathVariable long id) {
         Optional<User> user = userService.get(id);
-        if (user.isEmpty())
+        if (user.isEmpty()) {
             throw new ResourceDoesNotExistException("User not found, id = " + id);
+        }
         UserModel userModel = userService.modelFromUser(user.get(), UserController.class);
         return new ResponseEntity<>(userModel, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<PagedModel<UserModel>> getAll(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
+    public ResponseEntity<PagedModel<UserModel>> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
         Page<User> userPage = userService.getAll(pageable);
         PagedModel<UserModel> userModels = pagedUserResourcesAssembler.toModel(userPage, userModelAssembler);
         return new ResponseEntity<>(userModels, HttpStatus.OK);

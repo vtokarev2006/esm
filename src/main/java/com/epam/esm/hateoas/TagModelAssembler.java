@@ -1,6 +1,6 @@
 package com.epam.esm.hateoas;
 
-import com.epam.esm.controllers.v2.TagController;
+import com.epam.esm.controllers.TagController;
 import com.epam.esm.domain.Tag;
 import org.springframework.beans.BeanUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;

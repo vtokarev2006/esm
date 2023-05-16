@@ -7,7 +7,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -15,43 +21,39 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class CertificateCustomRepositoryImpl implements CertificateCustomRepository {
-
     private static final Logger logger = LoggerFactory.getLogger(CertificateCustomRepositoryImpl.class);
-
     @PersistenceContext
     EntityManager em;
 
     /**
-     *
      * SELECT c.*
-     *
      * FROM certificates c
-     *
      * left outer join certificates_have_tags cht
      * on(c.id = cht.certificate_id)
-     *
      * left outer join tags t
      * on(t.id = cht.tag_id)
-     *
-     * where (t.name = "Tag14" or t.name = "Tag15")
-     *
+     * where (c.name like "%partOfCertName%") and (c.description like "%partOfCertDescription%") and
+     *      (t.name = :tagName1 or t.name = "tagName2 ... or t.name = "tagNameN")
      * group by c.id
-     * having count(t.id) = 2
+     * having count(t.id) = :sizeOfTagNamesSet
      * order by c.id desc
      *
-     * @param name - search certificates with name equal the value of the param
+     * @param name        - search certificates with name equal the value of the param
      * @param description - search certificates with description contain the value of the param
-     * @param tagNames - search certificates with tags name (and condition)
-     * @param pageable - object determinate pageable behavior
+     * @param tagNames    - search certificates with tags name (and condition)
+     * @param pageable    - object determinate pageable behavior
      * @return - page of Certificates meet params above
      */
 
     @Override
-    public Page<Certificate> findCertificateByNameDescriptionTagNames(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
+    public Page<Certificate> findCertificatesByNameDescriptionTagNames(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
         CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
@@ -105,13 +107,11 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
             query.where(cb.and(predicate.get(), predicateTagName.get()));
             //noinspection OptionalGetWithoutIsPresent
             queryCount.where(cb.and(predicateCount.get(), predicateTagNameCount.get()));
-        }
-        else if (predicate.isPresent()) {
+        } else if (predicate.isPresent()) {
             query.where(predicate.get());
             //noinspection OptionalGetWithoutIsPresent
             queryCount.where(predicateCount.get());
-        }
-        else {
+        } else {
             predicateTagName.ifPresent(query::where);
             predicateTagNameCount.ifPresent(queryCount::where);
         }

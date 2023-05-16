@@ -1,4 +1,4 @@
-package com.epam.esm.controllers.v2;
+package com.epam.esm.controllers;
 
 import com.epam.esm.domain.Tag;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
@@ -19,12 +19,18 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
-@RestController("TagControllerV2")
+@RestController
 @RequestMapping("api/v2/tags")
 public class TagController {
 
@@ -40,9 +46,9 @@ public class TagController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TagModel> getById(@PathVariable long id) {
+    public ResponseEntity<TagModel> fetchById(@PathVariable long id) {
         try {
-            Tag tag = tagService.get(id);
+            Tag tag = tagService.fetchById(id);
             return new ResponseEntity<>(tagService.modelFromTag(tag), HttpStatus.OK);
         } catch (EmptyResultDataAccessException e) {
             throw new ResourceDoesNotExistException("Tag not found, tagId=" + id);
@@ -50,9 +56,8 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<PagedModel<TagModel>> getAll(
-            @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
-        Page<Tag> tagPage = tagService.getAll(pageable);
+    public ResponseEntity<PagedModel<TagModel>> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
+        Page<Tag> tagPage = tagService.fetchAll(pageable);
         PagedModel<TagModel> tagModel = pagedResourcesAssembler.toModel(tagPage, tagModelAssembler);
         return new ResponseEntity<>(tagModel, HttpStatus.OK);
     }
@@ -61,18 +66,10 @@ public class TagController {
     public ResponseEntity<TagModel> create(@RequestBody Tag tag) {
         try {
             Tag newTag = tagService.create(tag);
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(newTag.getId())
-                    .toUri();
-
+            URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newTag.getId()).toUri();
             TagModel tagModel = tagModelAssembler.toModel(newTag);
             tagModel.add(Link.of(String.valueOf(location)));
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .header(HttpHeaders.LOCATION, String.valueOf(location))
-                    .body(tagModel);
+            return ResponseEntity.status(HttpStatus.CREATED).header(HttpHeaders.LOCATION, String.valueOf(location)).body(tagModel);
         } catch (DataIntegrityViolationException e) {
             throw new TagDuplicateNameException("Tag already exist, name = " + tag.getName());
         }
@@ -87,8 +84,8 @@ public class TagController {
     }
 
     @GetMapping("/mostWidelyUsedTagOfUserWithHighestCostOfOrders")
-    public ResponseEntity<TagModel> mostWidelyUsedTagOfUserWithHighestCostOfOrders() {
-        Tag tag = tagService.mostWidelyUsedTagOfUserWithHighestCostOfOrders();
+    public ResponseEntity<TagModel> fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders() {
+        Tag tag = tagService.fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders().orElseThrow(() -> new ResourceDoesNotExistException(""));
         return new ResponseEntity<>(tagService.modelFromTag(tag), HttpStatus.OK);
     }
 }

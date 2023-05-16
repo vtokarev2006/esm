@@ -1,6 +1,6 @@
 package com.epam.esm.hateoas;
 
-import com.epam.esm.controllers.v2.UserController;
+import com.epam.esm.controllers.UserController;
 import com.epam.esm.domain.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;

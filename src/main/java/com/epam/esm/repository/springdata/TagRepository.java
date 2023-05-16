@@ -1,41 +1,26 @@
 package com.epam.esm.repository.springdata;
 
 import com.epam.esm.domain.Tag;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
-        @Query("select t, count(o) as freq from Order o join User u on(o.user = u) join Certificate c on (o.certificate = c) join c.tags t where u.id = :userId group by t order by freq desc")
-
-/*
     @Query(value = """
-            SELECT t.id as id, t.name as name, count(c.id) as count
-            FROM certificates_have_tags cht
-                    
-            inner join tags t
-            on(t.id = cht.tag_id)
-                    
-            inner join certificates c
-            on(c.id = cht.certificate_id)
-                    
-            inner join orders o
-            on(o.certificate_id = c.id)
-                    
-            inner join users u
-            on(o.user_id = u.id)
-                    
-            where u.id = ?1
-                    
+            select  t.*
+            from orders o, certificates c, certificates_have_tags cht, tags t, users u
+            where o.certificate_id = c.id and c.id = cht.certificate_id and cht.tag_id = t.id and u.id = o.user_id and o.user_id =
+                (
+                select o1.user_id
+                from orders o1
+                    left outer join orders o2
+                    on o1.price < o2.price
+                where o2.id is null
+                limit 1
+                )
             group by t.id, t.name
-            order by count desc
+            order by count(t.id) desc, t.name, t.id
             limit 1""", nativeQuery = true)
-*/
-
-
-        List<Tag> getTagsOrderedDescByFreqUsageByUserId(long userId, Pageable pageable);
-
+    Optional<Tag> findMostWidelyUsedTagOfUserWithHighestCostOfOrders();
 }
