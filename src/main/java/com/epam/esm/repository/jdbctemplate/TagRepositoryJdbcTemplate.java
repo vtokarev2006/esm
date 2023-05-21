@@ -5,7 +5,7 @@ import com.epam.esm.domain.dto.TagOrdersPriceDto;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.rowmappers.TagRowMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,6 +23,7 @@ import java.util.Optional;
 @Repository
 @Qualifier("TagRepositoryJdbcTemplate")
 @Profile("dev")
+@RequiredArgsConstructor
 public class TagRepositoryJdbcTemplate implements TagRepository {
     private static final String SQL_GET_BY_ID = "SELECT * FROM tags WHERE id = ?";
     private static final String SQL_GET_BY_NAME = "SELECT * FROM tags WHERE name = ?";
@@ -30,12 +31,7 @@ public class TagRepositoryJdbcTemplate implements TagRepository {
     private static final String SQL_INSERT = "INSERT INTO tags (name) values (?)";
     private static final String SQL_DELETE_BY_ID = "DELETE FROM tags WHERE id = ?";
     private static final String SQL_UPDATE_BY_ID = "UPDATE tags SET name = ? WHERE id = ?";
-    final private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public TagRepositoryJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Optional<Tag> fetchById(long id) {

@@ -3,7 +3,7 @@ package com.epam.esm.repository.jpa;
 import com.epam.esm.domain.Order;
 import com.epam.esm.repository.OrderRepository;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,14 +15,9 @@ import java.util.Optional;
 @Deprecated
 @Repository
 @Profile("dev")
+@RequiredArgsConstructor
 public class OrderRepositoryJpa implements OrderRepository {
-
     private final EntityManager em;
-
-    @Autowired
-    public OrderRepositoryJpa(EntityManager em) {
-        this.em = em;
-    }
 
     @Override
     public Optional<Order> fetchById(long id) {
@@ -33,6 +28,7 @@ public class OrderRepositoryJpa implements OrderRepository {
     public List<Order> fetchAll() {
         return em.createNamedQuery("Order_getAll", Order.class).getResultList();
     }
+
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public Order create(Order order) {
@@ -42,13 +38,12 @@ public class OrderRepositoryJpa implements OrderRepository {
 
     @Override
     public void update(Order order) {
-
-
+        throw new UnsupportedOperationException("OrderRepositoryJpa.update");
     }
 
     @Override
     public boolean delete(long id) {
-        return false;
+        throw new UnsupportedOperationException("OrderRepositoryJpa.delete");
     }
 
     @Override

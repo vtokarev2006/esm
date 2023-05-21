@@ -4,7 +4,7 @@ import com.epam.esm.domain.Tag;
 import com.epam.esm.domain.dto.TagOrdersPriceDto;
 import com.epam.esm.repository.TagRepository;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -14,13 +14,9 @@ import java.util.Optional;
 @Deprecated
 @Repository
 @Profile("dev")
+@RequiredArgsConstructor
 public class TagRepositoryJpa implements TagRepository {
     private final EntityManager em;
-
-    @Autowired
-    public TagRepositoryJpa(EntityManager em) {
-        this.em = em;
-    }
 
     @Override
     public Optional<Tag> fetchById(long id) {

@@ -4,6 +4,7 @@ import com.epam.esm.domain.User;
 import com.epam.esm.hateoas.UserModel;
 import com.epam.esm.hateoas.UserModelAssembler;
 import com.epam.esm.repository.springdata.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
@@ -14,15 +15,10 @@ import java.util.Optional;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-
     private final com.epam.esm.repository.springdata.UserRepository userRepository;
     private final UserModelAssembler userModelAssembler;
-
-    public UserService(UserRepository userRepository, UserModelAssembler userModelAssembler) {
-        this.userRepository = userRepository;
-        this.userModelAssembler = userModelAssembler;
-    }
 
     public Optional<User> fetchById(long id) {
         return userRepository.findById(id);

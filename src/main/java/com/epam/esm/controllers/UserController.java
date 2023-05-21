@@ -5,7 +5,7 @@ import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.hateoas.UserModel;
 import com.epam.esm.hateoas.UserModelAssembler;
 import com.epam.esm.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,17 +23,11 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/v2/users")
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
     private final UserModelAssembler userModelAssembler;
     private final PagedResourcesAssembler<User> pagedUserResourcesAssembler;
-
-    @Autowired
-    public UserController(UserService userService, UserModelAssembler userModelAssembler, PagedResourcesAssembler<User> pagedResourcesAssembler) {
-        this.userService = userService;
-        this.userModelAssembler = userModelAssembler;
-        this.pagedUserResourcesAssembler = pagedResourcesAssembler;
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserModel> fetchById(@PathVariable long id) {

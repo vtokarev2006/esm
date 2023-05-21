@@ -5,7 +5,6 @@ import com.epam.esm.domain.Tag;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -14,12 +13,13 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +27,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
+@Slf4j
+@RequiredArgsConstructor
 public class CertificateCustomRepositoryImpl implements CertificateCustomRepository {
-    private static final Logger logger = LoggerFactory.getLogger(CertificateCustomRepositoryImpl.class);
-    @PersistenceContext
-    EntityManager em;
+    private final EntityManager em;
 
     /**
      * SELECT c.*
@@ -40,7 +40,7 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
      * left outer join tags t
      * on(t.id = cht.tag_id)
      * where (c.name like "%partOfCertName%") and (c.description like "%partOfCertDescription%") and
-     *      (t.name = :tagName1 or t.name = "tagName2 ... or t.name = "tagNameN")
+     * (t.name = :tagName1 or t.name = "tagName2 ... or t.name = "tagNameN")
      * group by c.id
      * having count(t.id) = :sizeOfTagNamesSet
      * order by c.id desc
@@ -124,11 +124,15 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
         Long count;
         try {
             count = em.createQuery(queryCount).getSingleResult();
-            logger.debug("{}", count);
+            log.debug("{}", count);
             certificates = q.getResultList();
         } catch (NoResultException e) {
             throw new ResourceDoesNotExistException("No certificates matching your request");
         }
         return new PageImpl<>(certificates, pageable, count);
+    }
+
+    public void refresh(Certificate certificate) {
+        em.refresh(certificate);
     }
 }

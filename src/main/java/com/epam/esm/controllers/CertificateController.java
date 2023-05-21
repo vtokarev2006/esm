@@ -5,7 +5,7 @@ import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.hateoas.CertificateModel;
 import com.epam.esm.hateoas.CertificateModelAssembler;
 import com.epam.esm.services.CertificateService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,25 +37,17 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("api/v2/certificates")
+@RequiredArgsConstructor
 public class CertificateController {
     private final CertificateService certificateService;
-
     private final CertificateModelAssembler certificateModelAssembler;
-
     private final PagedResourcesAssembler<Certificate> pagedResourcesAssembler;
-
-    @Autowired
-    public CertificateController(CertificateService certificateService, CertificateModelAssembler certificateModelAssembler, PagedResourcesAssembler<Certificate> pagedResourcesAssembler) {
-        this.certificateService = certificateService;
-        this.certificateModelAssembler = certificateModelAssembler;
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
-    }
 
     @GetMapping
     public ResponseEntity<PagedModel<CertificateModel>> fetchCertificatesBySearchParamsPageable(@RequestParam Optional<String> name,
-                                                                                        @RequestParam Optional<String> description,
-                                                                                        @RequestParam Optional<Set<String>> tagNames,
-                                                                                        @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
+                                                                                                @RequestParam Optional<String> description,
+                                                                                                @RequestParam Optional<Set<String>> tagNames,
+                                                                                                @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
 
         Page<Certificate> certificatePage = certificateService.fetchCertificatesBySearchParams(name, description, tagNames.orElse(Collections.emptySet()), pageable);
         PagedModel<CertificateModel> certificateModel = pagedResourcesAssembler.toModel(certificatePage, certificateModelAssembler);

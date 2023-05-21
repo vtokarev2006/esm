@@ -5,6 +5,7 @@ import com.epam.esm.domain.Tag;
 import com.epam.esm.hateoas.TagModel;
 import com.epam.esm.hateoas.TagModelAssembler;
 import com.epam.esm.repository.springdata.TagRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -17,15 +18,11 @@ import java.util.Optional;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class TagService {
     final private TagRepository tagRepository;
     final private TagModelAssembler tagModelAssembler;
-
-    public TagService(TagRepository tagRepository, TagModelAssembler tagModelAssembler) {
-        this.tagRepository = tagRepository;
-        this.tagModelAssembler = tagModelAssembler;
-    }
 
     public Tag fetchById(long id) {
         Optional<Tag> tag = tagRepository.findById(id);

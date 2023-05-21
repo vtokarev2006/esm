@@ -13,4 +13,5 @@ public interface CertificateCustomRepository {
             Optional<String> description,
             Set<String> tagNames,
             Pageable pageable);
+    void refresh(Certificate certificate);
 }

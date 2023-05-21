@@ -3,7 +3,7 @@ package com.epam.esm.repository.jpa;
 import com.epam.esm.domain.User;
 import com.epam.esm.repository.UserRepository;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -13,13 +13,9 @@ import java.util.Optional;
 @Deprecated
 @Repository
 @Profile("dev")
+@RequiredArgsConstructor
 public class UserRepositoryJpa implements UserRepository {
     private final EntityManager em;
-
-    @Autowired
-    public UserRepositoryJpa(EntityManager em) {
-        this.em = em;
-    }
 
     @Override
     public Optional<User> fetchById(long id) {

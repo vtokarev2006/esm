@@ -6,7 +6,7 @@ import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.hateoas.TagModel;
 import com.epam.esm.hateoas.TagModelAssembler;
 import com.epam.esm.services.TagService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -32,18 +32,12 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("api/v2/tags")
+@RequiredArgsConstructor
 public class TagController {
 
     private final TagModelAssembler tagModelAssembler;
     private final PagedResourcesAssembler<Tag> pagedResourcesAssembler;
     final private TagService tagService;
-
-    @Autowired
-    public TagController(TagModelAssembler tagModelAssembler, PagedResourcesAssembler<Tag> pagedResourcesAssembler, TagService tagService) {
-        this.tagModelAssembler = tagModelAssembler;
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
-        this.tagService = tagService;
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<TagModel> fetchById(@PathVariable long id) {

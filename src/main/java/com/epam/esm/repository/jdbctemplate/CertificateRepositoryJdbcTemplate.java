@@ -60,12 +60,12 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
                 on(cht.tag_id = t.id)
             where c.id = ?""";
 
-    final static private String SQL_DELETE_BY_ID = "DELETE FROM certificates WHERE id = ?";
-    final private JdbcTemplate jdbcTemplate;
-    final private TagRepository tagRepository;
-    final private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private static final String SQL_DELETE_BY_ID = "DELETE FROM certificates WHERE id = ?";
+    private final JdbcTemplate jdbcTemplate;
+    private final TagRepository tagRepository;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final EntityManager em;
-    final private DataSource dataSource;
+    private final DataSource dataSource;
 
     @Autowired
     public CertificateRepositoryJdbcTemplate(JdbcTemplate jdbcTemplate, @Qualifier("TagRepositoryJdbcTemplate") TagRepository tagRepository, NamedParameterJdbcTemplate namedParameterJdbcTemplate, EntityManager em, DataSource dataSource) {

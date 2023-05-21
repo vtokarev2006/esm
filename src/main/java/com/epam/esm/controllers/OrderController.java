@@ -6,7 +6,7 @@ import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.hateoas.OrderModel;
 import com.epam.esm.hateoas.OrderModelAssembler;
 import com.epam.esm.services.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,17 +32,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/api/v2/orders")
+@RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
     private final OrderModelAssembler orderModelAssembler;
     private final PagedResourcesAssembler<Order> pagedResourcesAssembler;
-
-    @Autowired
-    public OrderController(OrderService orderService, OrderModelAssembler orderModelAssembler, PagedResourcesAssembler<Order> pagedResourcesAssembler) {
-        this.orderService = orderService;
-        this.orderModelAssembler = orderModelAssembler;
-        this.pagedResourcesAssembler = pagedResourcesAssembler;
-    }
 
     @GetMapping
     public ResponseEntity<PagedModel<OrderModel>> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {

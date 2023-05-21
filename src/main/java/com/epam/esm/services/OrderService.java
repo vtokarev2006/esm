@@ -8,6 +8,7 @@ import com.epam.esm.exceptions.BadRequestException;
 import com.epam.esm.repository.springdata.CertificateRepository;
 import com.epam.esm.repository.springdata.OrderRepository;
 import com.epam.esm.repository.springdata.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -18,17 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CertificateRepository certificateRepository;
-
-    @Autowired
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository, CertificateRepository certificateRepository) {
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-        this.certificateRepository = certificateRepository;
-    }
 
     @Transactional
     public Order createOrder(CreateOrderDto createOrderDto) {

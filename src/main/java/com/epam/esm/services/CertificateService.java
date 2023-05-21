@@ -4,6 +4,7 @@ import com.epam.esm.domain.Certificate;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.repository.springdata.CertificateRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -21,13 +22,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class CertificateService {
     private final CertificateRepository certificateRepository;
-
-    public CertificateService(CertificateRepository certificateRepository) {
-        this.certificateRepository = certificateRepository;
-    }
 
     public Page<Certificate> fetchCertificatesBySearchParams(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
         return certificateRepository.findCertificatesByNameDescriptionTagNames(name, description, tagNames, pageable);
@@ -65,10 +63,13 @@ public class CertificateService {
         certificateRepository.deleteById(id);
     }
 
+    @Transactional
     public Certificate create(Certificate certificate) {
         Certificate certificateToCreate = Certificate.builder().build();
         BeanUtils.copyProperties(certificate, certificateToCreate, "id", "createDate", "lastUpdateDate");
-        return certificateRepository.save(certificateToCreate);
+        Certificate certificateCreated = certificateRepository.save(certificateToCreate);
+        certificateRepository.refresh(certificateCreated);
+        return certificateCreated;
     }
 
     private Set<String> getNullPropertyNames(Object source) {
