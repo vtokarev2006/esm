@@ -24,11 +24,11 @@ public class UserService {
         this.userModelAssembler = userModelAssembler;
     }
 
-    public Optional<User> get(long id) {
+    public Optional<User> fetchById(long id) {
         return userRepository.findById(id);
     }
 
-    public Page<User> getAll(Pageable pageable) {
+    public Page<User> fetchAllPageable(Pageable pageable) {
         return userRepository.findAll(pageable);
     }
 

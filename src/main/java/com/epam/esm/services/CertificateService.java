@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.PropertyDescriptor;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -51,10 +50,7 @@ public class CertificateService {
         excludedFieldsFromUpdate.addAll(Set.of("id", "createDate", "lastUpdateDate"));
 
         log.trace("excludedFieldsFromUpdate:" + excludedFieldsFromUpdate);
-
         BeanUtils.copyProperties(certificate, certificateToSave, excludedFieldsFromUpdate.toArray(new String[0]));
-        certificateToSave.setLastUpdateDate(Instant.now());
-
         log.trace("certificateToSave after copyProperties:" + certificateToSave);
 
         try {
@@ -70,12 +66,7 @@ public class CertificateService {
     }
 
     public Certificate create(Certificate certificate) {
-        Instant now = Instant.now();
-        Certificate certificateToCreate = Certificate
-                .builder()
-                .createDate(now)
-                .lastUpdateDate(now)
-                .build();
+        Certificate certificateToCreate = Certificate.builder().build();
         BeanUtils.copyProperties(certificate, certificateToCreate, "id", "createDate", "lastUpdateDate");
         return certificateRepository.save(certificateToCreate);
     }

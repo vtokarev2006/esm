@@ -10,6 +10,9 @@ public class TagOrdersPriceDto {
 
     public TagOrdersPriceDto(long tagId, String tagName, double price) {
         this.price = price;
-        this.tag = new Tag(tagId, tagName);
+        this.tag = Tag.builder()
+                .id(tagId)
+                .name(tagName)
+                .build();
     }
 }

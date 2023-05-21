@@ -51,10 +51,14 @@ class EsmApplicationTests {
         Instant now;
 
         for (int i = 0; i < 5000; i++) {
-            now = Instant.now();
             user = users.get(r.nextInt(1000));
             certificate = certificates.get(r.nextInt(10000));
-            order = Order.builder().user(user).certificate(certificate).price(certificate.getPrice()).createDate(now).description(faker.funnyName().name()).build();
+            order = Order.builder()
+                    .user(user)
+                    .certificate(certificate)
+                    .price(certificate.getPrice())
+                    .description(faker.funnyName().name())
+                    .build();
 
             orderRepositorySpringData.save(order);
         }
@@ -70,7 +74,13 @@ class EsmApplicationTests {
 
             setOfTagsId.forEach(id -> tags.add(tagRepository.findById((long) id).get()));
             Instant now = Instant.now();
-            certificate = Certificate.builder().name(faker.funnyName().name()).tags(tags).description(faker.funnyName().name()).duration(r.nextInt(20) + 1).price(r.nextDouble(100) + 10).createDate(now).lastUpdateDate(now).build();
+            certificate = Certificate.builder()
+                    .name(faker.funnyName().name())
+                    .tags(tags)
+                    .description(faker.funnyName().name())
+                    .duration(r.nextInt(20) + 1)
+                    .price(r.nextDouble(100) + 10)
+                    .build();
             try {
                 certificateRepository.save(certificate);
             } catch (Exception ignored) {

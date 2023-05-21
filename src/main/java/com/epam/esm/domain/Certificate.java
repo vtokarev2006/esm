@@ -3,6 +3,7 @@ package com.epam.esm.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,6 +15,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -21,10 +25,11 @@ import java.util.List;
 
 @Data
 @Builder
-@RequiredArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Entity
 @Table(name = "certificates")
+@EntityListeners(AuditingEntityListener.class)
 public class Certificate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,9 +39,11 @@ public class Certificate implements Serializable {
     private Double price;
     private Integer duration;
 
+    @CreatedDate
     @Column(name = "create_date")
     private Instant createDate;
 
+    @LastModifiedDate
     @Column(name = "last_update_date")
     private Instant lastUpdateDate;
 

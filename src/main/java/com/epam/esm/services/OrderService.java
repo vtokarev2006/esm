@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -43,7 +42,12 @@ public class OrderService {
             throw new BadRequestException("Certificate doesnt exist, certificateId = " + createOrderDto.getCertificateId());
         }
 
-        Order order = Order.builder().certificate(certificate.get()).user(user.get()).price(certificate.get().getPrice()).description(createOrderDto.getDescription()).createDate(Instant.now()).build();
+        Order order = Order.builder()
+                .certificate(certificate.get())
+                .user(user.get())
+                .price(certificate.get().getPrice())
+                .description(createOrderDto.getDescription())
+                .build();
         return orderRepository.save(order);
     }
 
@@ -58,6 +62,4 @@ public class OrderService {
     public Order fetchById(long id) {
         return orderRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException(1));
     }
-
-
 }
