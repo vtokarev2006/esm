@@ -38,7 +38,7 @@ public class TagRepositoryJdbcTemplate implements TagRepository {
     }
 
     @Override
-    public Optional<Tag> findById(long id) {
+    public Optional<Tag> fetchById(long id) {
         return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_GET_BY_ID, new TagRowMapper(), id));
     }
 
@@ -74,12 +74,12 @@ public class TagRepositoryJdbcTemplate implements TagRepository {
     }
 
     @Override
-    public Tag findByName(String name) {
+    public Tag fetchByName(String name) {
         return jdbcTemplate.queryForObject(SQL_GET_BY_NAME, new TagRowMapper(), name);
     }
 
     @Override
-    public List<TagOrdersPriceDto> getTagSumOrdersPrice(long userId) {
+    public List<TagOrdersPriceDto> fetchTagSumOrdersPrice(long userId) {
         throw new UnsupportedOperationException("TagRepositoryJdbcTemplate - getTagWithMaxSumOrdersPrice");
     }
 }

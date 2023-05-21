@@ -7,7 +7,6 @@ import java.util.List;
 
 @Deprecated
 public interface TagRepository extends GenericRepository<Tag> {
-    Tag findByName(String name);
-    List<TagOrdersPriceDto> getTagSumOrdersPrice(long userId);
-
+    Tag fetchByName(String name);
+    List<TagOrdersPriceDto> fetchTagSumOrdersPrice(long userId);
 }

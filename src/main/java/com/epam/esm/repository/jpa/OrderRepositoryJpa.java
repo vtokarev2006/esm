@@ -25,7 +25,7 @@ public class OrderRepositoryJpa implements OrderRepository {
     }
 
     @Override
-    public Optional<Order> findById(long id) {
+    public Optional<Order> fetchById(long id) {
         return Optional.ofNullable(em.find(Order.class, id));
     }
 
@@ -52,7 +52,7 @@ public class OrderRepositoryJpa implements OrderRepository {
     }
 
     @Override
-    public List<Order> getByUserId(long userId) {
+    public List<Order> fetchByUserId(long userId) {
         return em.createNamedQuery("Order_getByUserId", Order.class).setParameter("userId", userId).getResultList();
     }
 }

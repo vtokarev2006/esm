@@ -5,6 +5,7 @@ import com.epam.esm.domain.Tag;
 import com.epam.esm.exceptions.BadRequestException;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
+import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.TagRepository;
 import com.epam.esm.repository.rowmappers.CertificateWithTagsResultSetExtractor;
 import jakarta.persistence.EntityManager;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 @Deprecated
 @Repository
 @Profile("dev")
-public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repository.CertificateRepository {
+public class CertificateRepositoryJdbcTemplate implements CertificateRepository {
 
     final static private String SQL_GET_ALL_CERTIFICATES_WITH_TAGS = """
             SELECT c.*, t.id as tag_id, t.name as tag_name
@@ -76,7 +77,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     }
 
     @Override
-    public Optional<Certificate> findById(long id) {
+    public Optional<Certificate> fetchById(long id) {
         List<Certificate> list = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS, new CertificateWithTagsResultSetExtractor(), id);
         if (list == null || list.isEmpty()) {
             throw new EmptyResultDataAccessException(1);
@@ -118,33 +119,36 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
 
     @Transactional
     @Override
-    public Certificate partialUpdate(long id, Map<String, String> fields) {
-        Integer duration;
-        Double price;
-        try {
-            duration = fields.get("duration") != null ? Integer.valueOf(fields.get("duration")) : null;
-            price = fields.get("price") != null ? Double.valueOf(fields.get("price")) : null;
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("Certificate patch request is malformed, id = " + id);
-        }
-
-        Certificate certificate = em.find(Certificate.class, id);
-        if (certificate == null) {
+    public Certificate updateById(long id, Certificate certificate) {
+        Certificate certificateToUpdate = em.find(Certificate.class, id);
+        if (certificateToUpdate == null) {
             throw new ResourceDoesNotExistException("Certificate doesnt exist, id = ");
         }
-
-        if (duration == null && price == null) {
-            throw new BadRequestException("Nothing to update for certificate id = " + id);
+        boolean nothingToUpdate = true;
+        if (certificate.getName() != null) {
+            certificateToUpdate.setName(certificate.getName());
+            nothingToUpdate = false;
         }
-
-        if (duration != null) {
-            certificate.setDuration(duration);
+        if (certificate.getDescription() != null) {
+            certificateToUpdate.setDescription(certificate.getDescription());
+            nothingToUpdate = false;
         }
-
-        if (price != null) {
-            certificate.setPrice(price);
+        if (certificate.getDuration() != null) {
+            certificateToUpdate.setDuration(certificate.getDuration());
+            nothingToUpdate = false;
         }
-        return certificate;
+        if (certificate.getPrice() != null) {
+            certificateToUpdate.setPrice(certificate.getPrice());
+            nothingToUpdate = false;
+        }
+        if (certificate.getTags() != null) {
+            certificateToUpdate.setTags(certificate.getTags());
+            nothingToUpdate = false;
+        }
+        if (nothingToUpdate) {
+            throw new BadRequestException("Nothing to update for certificateToUpdate id = " + id);
+        }
+        return certificateToUpdate;
     }
 
     @Transactional
@@ -164,7 +168,7 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         certificate.setLastUpdateDate(now);
 
         final List<Tag> tagsInCertificate = certificate.getTags();
-        final Map<Long, Tag> tagsInDB = getTagsInDbMap();
+        final Map<Long, Tag> tagsInDB = fetchTagsInDbMap();
         final Set<Long> tagIdsInCertsHaveTags = Collections.emptySet();
         updateTagsInDb(certificate, tagsInCertificate, tagsInDB, tagIdsInCertsHaveTags);
 
@@ -189,14 +193,14 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         namedParameterJdbcTemplate.update(query.getValue0(), query.getValue1());
 
         final List<Tag> tagsInCertificate = certificate.getTags();
-        final Map<Long, Tag> tagsInDB = getTagsInDbMap();
+        final Map<Long, Tag> tagsInDB = fetchTagsInDbMap();
         final Set<Long> tagIdsInCertsHaveTags = listForDbCert.get(0).getTags().stream().map(Tag::getId).collect(Collectors.toSet());
 
         deleteTags(certificate, tagsInCertificate, tagIdsInCertsHaveTags);
         updateTagsInDb(certificate, tagsInCertificate, tagsInDB, tagIdsInCertsHaveTags);
     }
 
-    private Map<Long, Tag> getTagsInDbMap() {
+    private Map<Long, Tag> fetchTagsInDbMap() {
         return tagRepository.fetchAll().stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
     }
 
@@ -227,7 +231,6 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
 
     private void deleteTags(Certificate newCertificate, List<Tag> tagsInCertificate, Set<Long> tagIdsInCertsHaveTags) {
         Set<Long> tagIdsInCertificate = tagsInCertificate.stream().map(Tag::getId).collect(Collectors.toSet());
-
         Set<Long> tagIdsToRemove = new HashSet<>(tagIdsInCertsHaveTags);
         tagIdsToRemove.removeAll(tagIdsInCertificate);
         tagIdsToRemove.forEach(id -> jdbcTemplate.update("DELETE FROM certificates_have_tags WHERE certificate_id = ? AND tag_id = ?", newCertificate.getId(), id));
@@ -238,7 +241,6 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
     }
 
     private Pair<String, MapSqlParameterSource> buildUpdateQuery(Certificate certificate) {
-
         List<String> listField = new ArrayList<>();
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
 
@@ -263,7 +265,6 @@ public class CertificateRepositoryJdbcTemplate implements com.epam.esm.repositor
         mapSqlParameterSource.addValue("last_update_date", Timestamp.from(Instant.now()));
 
         mapSqlParameterSource.addValue("id", certificate.getId());
-
 
         StringJoiner sj = new StringJoiner(", ");
         listField.stream().map(s -> s + "=:" + s).forEach(sj::add);

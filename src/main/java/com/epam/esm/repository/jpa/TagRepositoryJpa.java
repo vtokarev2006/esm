@@ -23,7 +23,7 @@ public class TagRepositoryJpa implements TagRepository {
     }
 
     @Override
-    public Optional<Tag> findById(long id) {
+    public Optional<Tag> fetchById(long id) {
         return Optional.ofNullable(em.find(Tag.class, id));
     }
 
@@ -49,11 +49,11 @@ public class TagRepositoryJpa implements TagRepository {
     }
 
     @Override
-    public Tag findByName(String name) {
+    public Tag fetchByName(String name) {
         throw new UnsupportedOperationException("TagRepositoryJpa.findByName(String name)");
     }
 
-    public List<TagOrdersPriceDto> getTagSumOrdersPrice(long userId) {
+    public List<TagOrdersPriceDto> fetchTagSumOrdersPrice(long userId) {
         return em.createNamedQuery("Tag_getTagSumOrdersPrice", TagOrdersPriceDto.class).setParameter("userId", userId).getResultList();
     }
 }

@@ -22,7 +22,7 @@ public class UserRepositoryJpa implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(long id) {
+    public Optional<User> fetchById(long id) {
         return Optional.ofNullable(em.find(User.class, id));
     }
 

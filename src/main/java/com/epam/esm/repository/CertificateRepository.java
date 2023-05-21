@@ -1,10 +1,8 @@
 package com.epam.esm.repository;
 
 import com.epam.esm.domain.Certificate;
-import org.springframework.context.annotation.Profile;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Deprecated
@@ -14,6 +12,6 @@ public interface CertificateRepository extends GenericRepository<Certificate> {
                                                       Optional<String> description,
                                                       Optional<String> orderBy,
                                                       String orderDirection);
-    Certificate partialUpdate(long id, Map<String, String> fields);
+    Certificate updateById(long id, Certificate certificate);
 }
 
