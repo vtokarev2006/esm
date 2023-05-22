@@ -1,6 +1,7 @@
 package com.epam.esm.services;
 
 import com.epam.esm.domain.Certificate;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.repository.springdata.CertificateRepository;
@@ -39,7 +40,7 @@ public class CertificateService {
     public Certificate updateById(long certificateId, Certificate certificate) {
         Certificate certificateToSave = certificateRepository
                 .findForUpdateById(certificateId)
-                .orElseThrow(() -> new ResourceDoesNotExistException("Certificate doesn't exist, id = " + certificateId));
+                .orElseThrow(() -> new ResourceDoesNotExistException("Certificate doesn't exist, id = " + certificateId, ErrorCode.CertificateNotExist));
 
         log.trace("certificate:" + certificate);
         log.trace("certificateToSave:" + certificateToSave);

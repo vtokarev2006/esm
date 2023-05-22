@@ -1,6 +1,7 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.domain.Tag;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.hateoas.TagModel;
@@ -45,7 +46,7 @@ public class TagController {
             Tag tag = tagService.fetchById(id);
             return new ResponseEntity<>(tagService.modelFromTag(tag), HttpStatus.OK);
         } catch (EmptyResultDataAccessException e) {
-            throw new ResourceDoesNotExistException("Tag not found, tagId=" + id);
+            throw new ResourceDoesNotExistException("Tag not found, tagId=" + id, ErrorCode.TagNotExist);
         }
     }
 
@@ -72,14 +73,14 @@ public class TagController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable long id) {
         if (!tagService.delete(id)) {
-            throw new ResourceDoesNotExistException("Tag not found, tagId=" + id);
+            throw new ResourceDoesNotExistException("Tag not found, tagId=" + id, ErrorCode.TagNotExist);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/mostWidelyUsedTagOfUserWithHighestCostOfOrders")
     public ResponseEntity<TagModel> fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders() {
-        Tag tag = tagService.fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders().orElseThrow(() -> new ResourceDoesNotExistException(""));
+        Tag tag = tagService.fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders().orElseThrow(() -> new ResourceDoesNotExistException("The most widely used tag of user with the highest cost of orders doesn't exist", ErrorCode.TagNotExist));
         return new ResponseEntity<>(tagService.modelFromTag(tag), HttpStatus.OK);
     }
 }

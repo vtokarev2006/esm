@@ -2,6 +2,7 @@ package com.epam.esm.controllers;
 
 import com.epam.esm.domain.Order;
 import com.epam.esm.domain.dto.CreateOrderDto;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.hateoas.OrderModel;
 import com.epam.esm.hateoas.OrderModelAssembler;
@@ -52,7 +53,7 @@ public class OrderController {
             OrderModel orderModel = modelFromOrder(order);
             return new ResponseEntity<>(orderModel, HttpStatus.OK);
         } catch (EmptyResultDataAccessException e) {
-            throw new ResourceDoesNotExistException("Order not found, orderId = " + id);
+            throw new ResourceDoesNotExistException("Order not found, orderId = " + id, ErrorCode.OrderNotExist);
         }
     }
 

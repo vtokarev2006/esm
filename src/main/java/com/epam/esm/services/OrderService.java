@@ -5,6 +5,7 @@ import com.epam.esm.domain.Order;
 import com.epam.esm.domain.User;
 import com.epam.esm.domain.dto.CreateOrderDto;
 import com.epam.esm.exceptions.BadRequestException;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.repository.springdata.CertificateRepository;
 import com.epam.esm.repository.springdata.OrderRepository;
 import com.epam.esm.repository.springdata.UserRepository;
@@ -29,14 +30,12 @@ public class OrderService {
     public Order createOrder(CreateOrderDto createOrderDto) {
         Optional<User> user = userRepository.findById(createOrderDto.getUserId());
         if (user.isEmpty()) {
-            throw new BadRequestException("User doesnt exist, userId = " + createOrderDto.getUserId());
+            throw new BadRequestException("User doesnt exist, userId = " + createOrderDto.getUserId(), ErrorCode.UserNotExistInDtoObject);
         }
-
         Optional<Certificate> certificate = certificateRepository.findById(createOrderDto.getCertificateId());
         if (certificate.isEmpty()) {
-            throw new BadRequestException("Certificate doesnt exist, certificateId = " + createOrderDto.getCertificateId());
+            throw new BadRequestException("Certificate doesnt exist, certificateId = " + createOrderDto.getCertificateId(), ErrorCode.CertificateNotExistInDtoObject);
         }
-
         Order order = Order.builder()
                 .certificate(certificate.get())
                 .user(user.get())

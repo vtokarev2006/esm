@@ -3,6 +3,7 @@ package com.epam.esm.repository.jdbctemplate;
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Tag;
 import com.epam.esm.exceptions.BadRequestException;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.repository.CertificateRepository;
@@ -122,7 +123,7 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
     public Certificate updateById(long id, Certificate certificate) {
         Certificate certificateToUpdate = em.find(Certificate.class, id);
         if (certificateToUpdate == null) {
-            throw new ResourceDoesNotExistException("Certificate doesnt exist, id = ");
+            throw new ResourceDoesNotExistException("Certificate doesnt exist, id = ", ErrorCode.CertificateNotExist);
         }
         boolean nothingToUpdate = true;
         if (certificate.getName() != null) {
@@ -146,7 +147,7 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
             nothingToUpdate = false;
         }
         if (nothingToUpdate) {
-            throw new BadRequestException("Nothing to update for certificateToUpdate id = " + id);
+            throw new BadRequestException("Nothing to update for certificateToUpdate id = " + id, ErrorCode.NothingToUpdate);
         }
         return certificateToUpdate;
     }
@@ -179,12 +180,12 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
     @Override
     public void update(Certificate certificate) {
         if (certificate == null || certificate.getId() == 0) {
-            throw new BadRequestException("Certificate object malformed in the request or it has id = 0");
+            throw new BadRequestException("Certificate object malformed in the request or it has id = 0", ErrorCode.ObjectMalformed);
         }
 
         List<Certificate> listForDbCert = jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS, new CertificateWithTagsResultSetExtractor(), certificate.getId());
         if (listForDbCert == null || listForDbCert.isEmpty()) {
-            throw new ResourceDoesNotExistException("Certificate id=" + certificate.getId() + " does not exist");
+            throw new ResourceDoesNotExistException("Certificate id=" + certificate.getId() + " does not exist", ErrorCode.CertificateNotExist);
         }
 
         jdbcTemplate.query(SQL_GET_CERTIFICATE_BY_ID_WITH_TAGS + " FOR UPDATE", new CertificateWithTagsResultSetExtractor(), listForDbCert.get(0).getId());

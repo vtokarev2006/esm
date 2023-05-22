@@ -2,6 +2,7 @@ package com.epam.esm.repository.springdata;
 
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Tag;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,7 +127,7 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
             log.debug("{}", count);
             certificates = q.getResultList();
         } catch (NoResultException e) {
-            throw new ResourceDoesNotExistException("No certificates matching your request");
+            throw new ResourceDoesNotExistException("No certificates matching your request", ErrorCode.CertificateNotExist);
         }
         return new PageImpl<>(certificates, pageable, count);
     }

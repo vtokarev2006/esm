@@ -1,6 +1,7 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.domain.User;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.hateoas.UserModel;
 import com.epam.esm.hateoas.UserModelAssembler;
@@ -33,7 +34,7 @@ public class UserController {
     public ResponseEntity<UserModel> fetchById(@PathVariable long id) {
         Optional<User> user = userService.fetchById(id);
         if (user.isEmpty()) {
-            throw new ResourceDoesNotExistException("User not found, id = " + id);
+            throw new ResourceDoesNotExistException("User not found, id = " + id, ErrorCode.UserNotExist);
         }
         UserModel userModel = userService.modelFromUser(user.get(), UserController.class);
         return new ResponseEntity<>(userModel, HttpStatus.OK);

@@ -1,6 +1,7 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.domain.Certificate;
+import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.hateoas.CertificateModel;
 import com.epam.esm.hateoas.CertificateModelAssembler;
@@ -61,7 +62,7 @@ public class CertificateController {
             CertificateModel certificateModel = modelFromCertificate(certificate);
             return new ResponseEntity<>(certificateModel, HttpStatus.OK);
         } catch (EmptyResultDataAccessException e) {
-            throw new ResourceDoesNotExistException("Certificate not found, certificateId = " + id);
+            throw new ResourceDoesNotExistException("Certificate not found, certificateId = " + id, ErrorCode.CertificateNotExist);
         }
     }
 
