@@ -17,21 +17,21 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-@Profile("prod")
 public class CertificateCustomRepositoryImpl implements CertificateCustomRepository {
     private final EntityManager em;
 
@@ -70,7 +70,6 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
         if (!tagNames.isEmpty()) {
             Path<Long> tagId = tags.get("id");
             Path<Long> tagIdCount = tagsCount.get("id");
-
             query.select(root).groupBy(root).having(cb.equal(cb.count(tagId), (long) tagNames.size()));
             queryCount.select(cb.count(rootCount)).groupBy(rootCount).having(cb.equal(cb.count(tagIdCount), (long) tagNames.size()));
         } else {
@@ -78,33 +77,11 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
             queryCount.select(cb.count(rootCount));
         }
 
-        List<Predicate> predicates = new ArrayList<>();
-        List<Predicate> predicatesCount = new ArrayList<>();
-
-        name.ifPresent(s -> {
-            predicates.add(cb.like(root.get("name"), "%" + s + "%"));
-            predicatesCount.add(cb.like(rootCount.get("name"), "%" + s + "%"));
-
-        });
-
-        description.ifPresent(s -> {
-            predicates.add(cb.like(root.get("description"), "%" + s + "%"));
-            predicatesCount.add(cb.like(rootCount.get("description"), "%" + s + "%"));
-        });
-
-        Optional<Predicate> predicate = predicates.stream().reduce(cb::and);
-        Optional<Predicate> predicateCount = predicatesCount.stream().reduce(cb::and);
-
-        List<Predicate> tagNamePredicates = new ArrayList<>();
-        List<Predicate> tagNamePredicatesCount = new ArrayList<>();
-
-        tagNames.forEach(s -> {
-            tagNamePredicates.add(cb.equal(tags.get("name"), s));
-            tagNamePredicatesCount.add(cb.equal(tagsCount.get("name"), s));
-        });
-
-        Optional<Predicate> predicateTagName = tagNamePredicates.stream().reduce(cb::or);
-        Optional<Predicate> predicateTagNameCount = tagNamePredicatesCount.stream().reduce(cb::or);
+        Map<String, Optional<Predicate>> predicateMap = buildPredicatesByParams(cb, root, rootCount, tags, tagsCount, name, description, tagNames);
+        Optional<Predicate> predicate = predicateMap.get("predicate");
+        Optional<Predicate> predicateCount = predicateMap.get("predicateCount");
+        Optional<Predicate> predicateTagName = predicateMap.get("predicateTagName");
+        Optional<Predicate> predicateTagNameCount = predicateMap.get("predicateTagNameCount");
 
         if (predicate.isPresent() && predicateTagName.isPresent()) {
             query.where(cb.and(predicate.get(), predicateTagName.get()));
@@ -131,6 +108,47 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
             throw new ResourceDoesNotExistException("No certificates matching your request", ErrorCode.CertificateNotExist);
         }
         return new PageImpl<>(certificates, pageable, count);
+    }
+
+    private Map<String, Optional<Predicate>> buildPredicatesByParams(CriteriaBuilder cb,
+                                                                     Root<Certificate> root,
+                                                                     Root<Certificate> rootCount,
+                                                                     Join<Certificate, Tag> tags,
+                                                                     Join<Certificate, Tag> tagsCount,
+                                                                     Optional<String> name,
+                                                                     Optional<String> description,
+                                                                     Set<String> tagNames) {
+        List<Predicate> predicates = new ArrayList<>();
+        List<Predicate> predicatesCount = new ArrayList<>();
+        name.ifPresent(s -> {
+            predicates.add(cb.like(root.get("name"), "%" + s + "%"));
+            predicatesCount.add(cb.like(rootCount.get("name"), "%" + s + "%"));
+        });
+        description.ifPresent(s -> {
+            predicates.add(cb.like(root.get("description"), "%" + s + "%"));
+            predicatesCount.add(cb.like(rootCount.get("description"), "%" + s + "%"));
+        });
+
+        Optional<Predicate> predicate = predicates.stream().reduce(cb::and);
+        Optional<Predicate> predicateCount = predicatesCount.stream().reduce(cb::and);
+
+        List<Predicate> tagNamePredicates = new ArrayList<>();
+        List<Predicate> tagNamePredicatesCount = new ArrayList<>();
+
+        tagNames.forEach(s -> {
+            tagNamePredicates.add(cb.equal(tags.get("name"), s));
+            tagNamePredicatesCount.add(cb.equal(tagsCount.get("name"), s));
+        });
+
+        Optional<Predicate> predicateTagName = tagNamePredicates.stream().reduce(cb::or);
+        Optional<Predicate> predicateTagNameCount = tagNamePredicatesCount.stream().reduce(cb::or);
+
+        Map<String, Optional<Predicate>> map = new HashMap<>();
+        map.put("predicate", predicate);
+        map.put("predicateCount", predicateCount);
+        map.put("predicateTagName", predicateTagName);
+        map.put("predicateTagNameCount", predicateTagNameCount);
+        return map;
     }
 
     public void refresh(Certificate certificate) {
