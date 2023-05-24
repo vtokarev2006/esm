@@ -4,7 +4,7 @@ import com.epam.esm.domain.Certificate;
 import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
-import com.epam.esm.repository.springdata.CertificateRepository;
+import com.epam.esm.repository.CertificateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -28,11 +28,11 @@ import java.util.Set;
 public class CertificateService {
     private final CertificateRepository certificateRepository;
 
-    public Page<Certificate> fetchCertificatesBySearchParams(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
+    public Page<Certificate> findCertificatesByParams(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
         return certificateRepository.findCertificatesByNameDescriptionTagNames(name, description, tagNames, pageable);
     }
 
-    public Certificate fetchById(long id) {
+    public Certificate findById(long id) {
         return certificateRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException(1));
     }
 

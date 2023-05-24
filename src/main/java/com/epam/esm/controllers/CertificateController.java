@@ -50,7 +50,7 @@ public class CertificateController {
                                                                                                 @RequestParam Optional<Set<String>> tagNames,
                                                                                                 @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
 
-        Page<Certificate> certificatePage = certificateService.fetchCertificatesBySearchParams(name, description, tagNames.orElse(Collections.emptySet()), pageable);
+        Page<Certificate> certificatePage = certificateService.findCertificatesByParams(name, description, tagNames.orElse(Collections.emptySet()), pageable);
         PagedModel<CertificateModel> certificateModel = pagedResourcesAssembler.toModel(certificatePage, certificateModelAssembler);
         return new ResponseEntity<>(certificateModel, HttpStatus.OK);
     }
@@ -58,7 +58,7 @@ public class CertificateController {
     @GetMapping("/{id}")
     public ResponseEntity<CertificateModel> fetchById(@PathVariable long id) {
         try {
-            Certificate certificate = certificateService.fetchById(id);
+            Certificate certificate = certificateService.findById(id);
             CertificateModel certificateModel = modelFromCertificate(certificate);
             return new ResponseEntity<>(certificateModel, HttpStatus.OK);
         } catch (EmptyResultDataAccessException e) {

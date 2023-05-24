@@ -32,7 +32,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserModel> fetchById(@PathVariable long id) {
-        Optional<User> user = userService.fetchById(id);
+        Optional<User> user = userService.findById(id);
         if (user.isEmpty()) {
             throw new ResourceDoesNotExistException("User not found, id = " + id, ErrorCode.UserNotExist);
         }
@@ -42,7 +42,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<PagedModel<UserModel>> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
-        Page<User> userPage = userService.fetchAllPageable(pageable);
+        Page<User> userPage = userService.findAllPageable(pageable);
         PagedModel<UserModel> userModels = pagedUserResourcesAssembler.toModel(userPage, userModelAssembler);
         return new ResponseEntity<>(userModels, HttpStatus.OK);
     }

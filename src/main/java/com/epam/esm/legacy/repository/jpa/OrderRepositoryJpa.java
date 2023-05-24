@@ -1,7 +1,7 @@
-package com.epam.esm.repository.jpa;
+package com.epam.esm.legacy.repository.jpa;
 
 import com.epam.esm.domain.Order;
-import com.epam.esm.repository.OrderRepository;
+import com.epam.esm.legacy.repository.OrderRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Deprecated
 @Repository
-@Profile("dev")
+@Profile("legacy")
 @RequiredArgsConstructor
 public class OrderRepositoryJpa implements OrderRepository {
     private final EntityManager em;

@@ -1,9 +1,21 @@
 package com.epam.esm.repository;
 
 import com.epam.esm.domain.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-@Deprecated
-public interface OrderRepository extends GenericRepository<Order> {
-    List<Order> fetchByUserId(long userId);
+public interface OrderRepository extends JpaRepository<Order, Long> {
+    Page<Order> findByUserId(long userId, Pageable pageable);
+/*
+    @EntityGraph(
+            type = EntityGraph.EntityGraphType.FETCH,
+            attributePaths = {
+                    "user",
+                    "certificate"
+            }
+    )
+    @Override
+    Page<Order> findAll(Pageable pageable);
+*/
 }

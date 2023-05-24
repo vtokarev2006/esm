@@ -1,7 +1,7 @@
-package com.epam.esm.repository.jpa;
+package com.epam.esm.legacy.repository.jpa;
 
 import com.epam.esm.domain.User;
-import com.epam.esm.repository.UserRepository;
+import com.epam.esm.legacy.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Deprecated
 @Repository
-@Profile("dev")
+@Profile("legacy")
 @RequiredArgsConstructor
 public class UserRepositoryJpa implements UserRepository {
     private final EntityManager em;

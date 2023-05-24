@@ -1,12 +1,11 @@
-package com.epam.esm.repository.jdbctemplate;
+package com.epam.esm.legacy.repository.jdbctemplate;
 
 import com.epam.esm.domain.Tag;
 import com.epam.esm.domain.dto.TagOrdersPriceDto;
 import com.epam.esm.exceptions.TagDuplicateNameException;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.rowmappers.TagRowMapper;
+import com.epam.esm.legacy.repository.TagRepository;
+import com.epam.esm.legacy.repository.rowmappers.TagRowMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,8 +20,7 @@ import java.util.Optional;
 
 @Deprecated
 @Repository
-@Qualifier("TagRepositoryJdbcTemplate")
-@Profile("dev")
+@Profile("legacy")
 @RequiredArgsConstructor
 public class TagRepositoryJdbcTemplate implements TagRepository {
     private static final String SQL_GET_BY_ID = "SELECT * FROM tags WHERE id = ?";
@@ -75,7 +73,7 @@ public class TagRepositoryJdbcTemplate implements TagRepository {
     }
 
     @Override
-    public List<TagOrdersPriceDto> fetchTagSumOrdersPrice(long userId) {
+    public List<TagOrdersPriceDto> fetchTagSummaryByUserId(long userId) {
         throw new UnsupportedOperationException("TagRepositoryJdbcTemplate - getTagWithMaxSumOrdersPrice");
     }
 }

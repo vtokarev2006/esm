@@ -1,11 +1,13 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.domain.Tag;
+import com.epam.esm.domain.dto.TagSummaryDto;
 import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
 import com.epam.esm.hateoas.TagModel;
 import com.epam.esm.hateoas.TagModelAssembler;
+import com.epam.esm.hateoas.TagSummaryDtoModel;
 import com.epam.esm.services.TagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -43,7 +45,7 @@ public class TagController {
     @GetMapping("/{id}")
     public ResponseEntity<TagModel> fetchById(@PathVariable long id) {
         try {
-            Tag tag = tagService.fetchById(id);
+            Tag tag = tagService.findById(id);
             return new ResponseEntity<>(tagService.modelFromTag(tag), HttpStatus.OK);
         } catch (EmptyResultDataAccessException e) {
             throw new ResourceDoesNotExistException("Tag not found, tagId=" + id, ErrorCode.TagNotExist);
@@ -52,7 +54,7 @@ public class TagController {
 
     @GetMapping
     public ResponseEntity<PagedModel<TagModel>> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
-        Page<Tag> tagPage = tagService.fetchAll(pageable);
+        Page<Tag> tagPage = tagService.findAllPageable(pageable);
         PagedModel<TagModel> tagModel = pagedResourcesAssembler.toModel(tagPage, tagModelAssembler);
         return new ResponseEntity<>(tagModel, HttpStatus.OK);
     }
@@ -78,9 +80,9 @@ public class TagController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/mostWidelyUsedTagOfUserWithHighestCostOfOrders")
-    public ResponseEntity<TagModel> fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders() {
-        Tag tag = tagService.fetchMostWidelyUsedTagOfUserWithHighestCostOfOrders().orElseThrow(() -> new ResourceDoesNotExistException("The most widely used tag of user with the highest cost of orders doesn't exist", ErrorCode.TagNotExist));
-        return new ResponseEntity<>(tagService.modelFromTag(tag), HttpStatus.OK);
+    @GetMapping("/summary/{userId}")
+    public ResponseEntity<TagSummaryDtoModel> fetchTagSummaryByUserId(@PathVariable long userId) {
+        TagSummaryDto tagSummaryDto = tagService.findTagSummaryByUserId(userId).orElseThrow(() -> new ResourceDoesNotExistException("The most widely used tag of user with the highest cost of orders doesn't exist", ErrorCode.TagNotExist));
+        return new ResponseEntity<>(tagService.modelFromTagSummaryDto(tagSummaryDto, userId), HttpStatus.OK);
     }
 }

@@ -1,4 +1,4 @@
-package com.epam.esm.repository.rowmappers;
+package com.epam.esm.legacy.repository.rowmappers;
 
 import com.epam.esm.domain.Certificate;
 import org.springframework.jdbc.core.RowMapper;

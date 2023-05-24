@@ -8,10 +8,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableJpaAuditing
-@Profile("dev")
-public class DevelopmentConfiguration {
+public class AppConfig {
+
     @Bean
+    @Profile("legacy")
     public Faker faker() {
         return new Faker();
     }
+
 }

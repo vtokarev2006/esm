@@ -1,9 +1,10 @@
-package com.epam.esm.repository.springdata;
+package com.epam.esm.repository.impl;
 
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Tag;
 import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
+import com.epam.esm.repository.CertificateCustomRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
@@ -16,6 +17,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,7 @@ import java.util.Set;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
+@Profile("prod")
 public class CertificateCustomRepositoryImpl implements CertificateCustomRepository {
     private final EntityManager em;
 
@@ -105,12 +108,10 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
 
         if (predicate.isPresent() && predicateTagName.isPresent()) {
             query.where(cb.and(predicate.get(), predicateTagName.get()));
-            //noinspection OptionalGetWithoutIsPresent
-            queryCount.where(cb.and(predicateCount.get(), predicateTagNameCount.get()));
+            queryCount.where(cb.and(predicateCount.orElseThrow(), predicateTagNameCount.orElseThrow()));
         } else if (predicate.isPresent()) {
             query.where(predicate.get());
-            //noinspection OptionalGetWithoutIsPresent
-            queryCount.where(predicateCount.get());
+            queryCount.where(predicateCount.orElseThrow());
         } else {
             predicateTagName.ifPresent(query::where);
             predicateTagNameCount.ifPresent(queryCount::where);

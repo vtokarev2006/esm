@@ -1,4 +1,4 @@
-package com.epam.esm.repository;
+package com.epam.esm.legacy.repository;
 
 import java.util.List;
 import java.util.Optional;

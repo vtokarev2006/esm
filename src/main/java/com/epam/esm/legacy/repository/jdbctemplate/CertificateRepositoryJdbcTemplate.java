@@ -1,4 +1,4 @@
-package com.epam.esm.repository.jdbctemplate;
+package com.epam.esm.legacy.repository.jdbctemplate;
 
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Tag;
@@ -6,13 +6,12 @@ import com.epam.esm.exceptions.BadRequestException;
 import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.TagDuplicateNameException;
-import com.epam.esm.repository.CertificateRepository;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.rowmappers.CertificateWithTagsResultSetExtractor;
+import com.epam.esm.legacy.repository.CertificateRepository;
+import com.epam.esm.legacy.repository.TagRepository;
+import com.epam.esm.legacy.repository.rowmappers.CertificateWithTagsResultSetExtractor;
 import jakarta.persistence.EntityManager;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -41,7 +40,7 @@ import java.util.stream.Collectors;
 
 @Deprecated
 @Repository
-@Profile("dev")
+@Profile("legacy")
 public class CertificateRepositoryJdbcTemplate implements CertificateRepository {
 
     final static private String SQL_GET_ALL_CERTIFICATES_WITH_TAGS = """
@@ -69,7 +68,11 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
     private final DataSource dataSource;
 
     @Autowired
-    public CertificateRepositoryJdbcTemplate(JdbcTemplate jdbcTemplate, @Qualifier("TagRepositoryJdbcTemplate") TagRepository tagRepository, NamedParameterJdbcTemplate namedParameterJdbcTemplate, EntityManager em, DataSource dataSource) {
+    public CertificateRepositoryJdbcTemplate(JdbcTemplate jdbcTemplate,
+                                             TagRepository tagRepository,
+                                             NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                                             EntityManager em,
+                                             DataSource dataSource) {
         this.jdbcTemplate = jdbcTemplate;
         this.tagRepository = tagRepository;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;

@@ -1,8 +1,8 @@
-package com.epam.esm.repository.jpa;
+package com.epam.esm.legacy.repository.jpa;
 
 import com.epam.esm.domain.Tag;
 import com.epam.esm.domain.dto.TagOrdersPriceDto;
-import com.epam.esm.repository.TagRepository;
+import com.epam.esm.legacy.repository.TagRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Deprecated
 @Repository
-@Profile("dev")
+@Profile("legacy")
 @RequiredArgsConstructor
 public class TagRepositoryJpa implements TagRepository {
     private final EntityManager em;
@@ -25,7 +25,7 @@ public class TagRepositoryJpa implements TagRepository {
 
     @Override
     public List<Tag> fetchAll() {
-        throw new UnsupportedOperationException("public List<Tag> fetchAll()");
+        throw new UnsupportedOperationException("public List<Tag> findAllPageable()");
     }
 
     @Override
@@ -49,7 +49,7 @@ public class TagRepositoryJpa implements TagRepository {
         throw new UnsupportedOperationException("TagRepositoryJpa.findByName(String name)");
     }
 
-    public List<TagOrdersPriceDto> fetchTagSumOrdersPrice(long userId) {
-        return em.createNamedQuery("Tag_getTagSumOrdersPrice", TagOrdersPriceDto.class).setParameter("userId", userId).getResultList();
+    public List<TagOrdersPriceDto> fetchTagSummaryByUserId(long userId) {
+        return em.createNamedQuery("Tag.getTagSumOrdersPrice", TagOrdersPriceDto.class).setParameter("userId", userId).getResultList();
     }
 }

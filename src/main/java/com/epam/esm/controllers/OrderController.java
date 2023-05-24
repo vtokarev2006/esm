@@ -41,7 +41,7 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<PagedModel<OrderModel>> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
-        Page<Order> orders = orderService.fetchAll(pageable);
+        Page<Order> orders = orderService.findAllPageable(pageable);
         PagedModel<OrderModel> orderModels = pagedResourcesAssembler.toModel(orders, orderModelAssembler);
         return new ResponseEntity<>(orderModels, HttpStatus.OK);
     }
@@ -69,7 +69,7 @@ public class OrderController {
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<PagedModel<OrderModel>> fetchByUserPageable(@PathVariable long userId, @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
-        Page<Order> orderPage = orderService.fetchByUserId(userId, pageable);
+        Page<Order> orderPage = orderService.findByUserId(userId, pageable);
         PagedModel<OrderModel> orderModels = pagedResourcesAssembler.toModel(orderPage, orderModelAssembler);
         return new ResponseEntity<>(orderModels, HttpStatus.OK);
     }

@@ -3,7 +3,7 @@ package com.epam.esm.services;
 import com.epam.esm.domain.User;
 import com.epam.esm.hateoas.UserModel;
 import com.epam.esm.hateoas.UserModelAssembler;
-import com.epam.esm.repository.springdata.UserRepository;
+import com.epam.esm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,14 +17,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final com.epam.esm.repository.springdata.UserRepository userRepository;
+    private final UserRepository userRepository;
     private final UserModelAssembler userModelAssembler;
 
-    public Optional<User> fetchById(long id) {
+    public Optional<User> findById(long id) {
         return userRepository.findById(id);
     }
 
-    public Page<User> fetchAllPageable(Pageable pageable) {
+    public Page<User> findAllPageable(Pageable pageable) {
         return userRepository.findAll(pageable);
     }
 
