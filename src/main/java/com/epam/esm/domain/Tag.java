@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -45,6 +46,7 @@ import java.time.Instant;
                 @ColumnResult(name = "tagLastUpdateDate", type = Instant.class),
                 @ColumnResult(name = "highestCost",  type = Double.class)}))
 @Data
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor

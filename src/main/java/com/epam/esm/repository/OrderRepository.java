@@ -7,15 +7,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserId(long userId, Pageable pageable);
-/*
-    @EntityGraph(
-            type = EntityGraph.EntityGraphType.FETCH,
-            attributePaths = {
-                    "user",
-                    "certificate"
-            }
-    )
-    @Override
-    Page<Order> findAll(Pageable pageable);
-*/
 }
