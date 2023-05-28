@@ -43,7 +43,7 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
      * join tags tN
      * on (tN.id = cht.tag_id and tN.name="tagNameN")
      *
-     * where (c.name like "%partOfCertName%") and (c.description like "%partOfCertDescription%")
+     * where (c.name like "%name%") and (c.description like "%description%")
      * order by c.id desc
      *
      * @param name        - search certificates with name equal the value of the param
