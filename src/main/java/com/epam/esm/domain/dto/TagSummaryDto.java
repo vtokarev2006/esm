@@ -10,7 +10,7 @@ public class TagSummaryDto {
     private final Tag tag;
     private final double highestCost;
 
-    public TagSummaryDto(long tagId, String tagName, Instant tagCreateDate, Instant tagLastUpdateDate, double highestCost) {
+    public TagSummaryDto(Long tagId, String tagName, Instant tagCreateDate, Instant tagLastUpdateDate, Double highestCost) {
         this.tag = Tag.builder()
                 .id(tagId)
                 .name(tagName)

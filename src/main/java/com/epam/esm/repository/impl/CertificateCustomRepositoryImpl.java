@@ -2,30 +2,23 @@ package com.epam.esm.repository.impl;
 
 import com.epam.esm.domain.Certificate;
 import com.epam.esm.domain.Tag;
-import com.epam.esm.exceptions.ErrorCode;
-import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.repository.CertificateCustomRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,18 +27,23 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class CertificateCustomRepositoryImpl implements CertificateCustomRepository {
     private final EntityManager em;
-
     /**
      * SELECT c.*
      * FROM certificates c
-     * left outer join certificates_have_tags cht
-     * on(c.id = cht.certificate_id)
-     * left outer join tags t
-     * on(t.id = cht.tag_id)
-     * where (c.name like "%partOfCertName%") and (c.description like "%partOfCertDescription%") and
-     * (t.name = :tagName1 or t.name = "tagName2 ... or t.name = "tagNameN")
-     * group by c.id
-     * having count(t.id) = :sizeOfTagNamesSet
+     *
+     * join certificates_have_tags cht1
+     * on (c.id = cht1.certificate_id)
+     * join tags t1
+     * on (t1.id = cht.tag_id and t1.name="tagName1")
+     *
+     * ..........................
+     *
+     * join certificates_have_tags chtN
+     * on (c.id = chtN.certificate_id)
+     * join tags tN
+     * on (tN.id = cht.tag_id and tN.name="tagNameN")
+     *
+     * where (c.name like "%partOfCertName%") and (c.description like "%partOfCertDescription%")
      * order by c.id desc
      *
      * @param name        - search certificates with name equal the value of the param
@@ -54,70 +52,24 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
      * @param pageable    - object determinate pageable behavior
      * @return - page of Certificates meet params above
      */
-
     @Override
-    public Page<Certificate> findCertificatesByNameDescriptionTagNames(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
+    public PageImpl<Certificate> findCertificatesByNameDescriptionTagNames(Optional<String> name, Optional<String> description, Set<String> tagNames, Pageable pageable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
         CriteriaQuery<Certificate> query = cb.createQuery(Certificate.class);
         Root<Certificate> root = query.from(Certificate.class);
-        Join<Certificate, Tag> tags = root.join("tags", JoinType.LEFT);
 
         CriteriaQuery<Long> queryCount = cb.createQuery(Long.class);
         Root<Certificate> rootCount = queryCount.from(Certificate.class);
-        Join<Certificate, Tag> tagsCount = rootCount.join("tags", JoinType.LEFT);
 
-        if (!tagNames.isEmpty()) {
-            Path<Long> tagId = tags.get("id");
-            Path<Long> tagIdCount = tagsCount.get("id");
-            query.select(root).groupBy(root).having(cb.equal(cb.count(tagId), (long) tagNames.size()));
-            queryCount.select(cb.count(rootCount)).groupBy(rootCount).having(cb.equal(cb.count(tagIdCount), (long) tagNames.size()));
-        } else {
-            query.select(root);
-            queryCount.select(cb.count(rootCount));
-        }
+        tagNames.forEach(tagName -> {
+            Join<Certificate, Tag> tag = root.join("tags");
+            tag.on(cb.equal(tag.get("name"), tagName));
 
-        Map<String, Optional<Predicate>> predicateMap = buildPredicatesByParams(cb, root, rootCount, tags, tagsCount, name, description, tagNames);
-        Optional<Predicate> predicate = predicateMap.get("predicate");
-        Optional<Predicate> predicateCount = predicateMap.get("predicateCount");
-        Optional<Predicate> predicateTagName = predicateMap.get("predicateTagName");
-        Optional<Predicate> predicateTagNameCount = predicateMap.get("predicateTagNameCount");
+            Join<Certificate, Tag> tagCount = rootCount.join("tags");
+            tagCount.on(cb.equal(tagCount.get("name"), tagName));
+        });
 
-        if (predicate.isPresent() && predicateTagName.isPresent()) {
-            query.where(cb.and(predicate.get(), predicateTagName.get()));
-            queryCount.where(cb.and(predicateCount.orElseThrow(), predicateTagNameCount.orElseThrow()));
-        } else if (predicate.isPresent()) {
-            query.where(predicate.get());
-            queryCount.where(predicateCount.orElseThrow());
-        } else {
-            predicateTagName.ifPresent(query::where);
-            predicateTagNameCount.ifPresent(queryCount::where);
-        }
-
-        TypedQuery<Certificate> q = em.createQuery(query);
-        q.setFirstResult(pageable.getPageNumber());
-        q.setMaxResults(pageable.getPageSize());
-
-        List<Certificate> certificates;
-        Long count;
-        try {
-            count = em.createQuery(queryCount).getSingleResult();
-            log.debug("{}", count);
-            certificates = q.getResultList();
-        } catch (NoResultException e) {
-            throw new ResourceDoesNotExistException("No certificates matching your request", ErrorCode.CertificateNotExist);
-        }
-        return new PageImpl<>(certificates, pageable, count);
-    }
-
-    private Map<String, Optional<Predicate>> buildPredicatesByParams(CriteriaBuilder cb,
-                                                                     Root<Certificate> root,
-                                                                     Root<Certificate> rootCount,
-                                                                     Join<Certificate, Tag> tags,
-                                                                     Join<Certificate, Tag> tagsCount,
-                                                                     Optional<String> name,
-                                                                     Optional<String> description,
-                                                                     Set<String> tagNames) {
         List<Predicate> predicates = new ArrayList<>();
         List<Predicate> predicatesCount = new ArrayList<>();
         name.ifPresent(s -> {
@@ -129,29 +81,16 @@ public class CertificateCustomRepositoryImpl implements CertificateCustomReposit
             predicatesCount.add(cb.like(rootCount.get("description"), "%" + s + "%"));
         });
 
-        Optional<Predicate> predicate = predicates.stream().reduce(cb::and);
-        Optional<Predicate> predicateCount = predicatesCount.stream().reduce(cb::and);
+        query.select(root).distinct(true);
+        queryCount.select(cb.countDistinct(rootCount));
+        predicates.stream().reduce(cb::and).ifPresent(query::where);
+        predicatesCount.stream().reduce(cb::and).ifPresent(queryCount::where);
+        query.orderBy(QueryUtils.toOrders(pageable.getSort(), root, cb));
 
-        List<Predicate> tagNamePredicates = new ArrayList<>();
-        List<Predicate> tagNamePredicatesCount = new ArrayList<>();
+        TypedQuery<Certificate> resultQuery = em.createQuery(query);
+        resultQuery.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+        resultQuery.setMaxResults(pageable.getPageSize());
 
-        tagNames.forEach(s -> {
-            tagNamePredicates.add(cb.equal(tags.get("name"), s));
-            tagNamePredicatesCount.add(cb.equal(tagsCount.get("name"), s));
-        });
-
-        Optional<Predicate> predicateTagName = tagNamePredicates.stream().reduce(cb::or);
-        Optional<Predicate> predicateTagNameCount = tagNamePredicatesCount.stream().reduce(cb::or);
-
-        Map<String, Optional<Predicate>> map = new HashMap<>();
-        map.put("predicate", predicate);
-        map.put("predicateCount", predicateCount);
-        map.put("predicateTagName", predicateTagName);
-        map.put("predicateTagNameCount", predicateTagNameCount);
-        return map;
-    }
-
-    public void refresh(Certificate certificate) {
-        em.refresh(certificate);
+        return new PageImpl<>(resultQuery.getResultList(), pageable, em.createQuery(queryCount).getSingleResult());
     }
 }

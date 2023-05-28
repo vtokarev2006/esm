@@ -1,6 +1,7 @@
 package com.epam.esm.domain;
 
 import com.epam.esm.domain.dto.TagSummaryDto;
+import jakarta.persistence.Column;
 import jakarta.persistence.ColumnResult;
 import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.Entity;
@@ -53,5 +54,6 @@ import java.time.Instant;
 @Entity
 @Table(name = "tags")
 public class Tag extends BaseEntity implements Serializable {
+    @Column(unique=true, nullable = false)
     private String name;
 }
