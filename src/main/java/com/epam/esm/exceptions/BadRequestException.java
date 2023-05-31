@@ -1,5 +1,8 @@
 package com.epam.esm.exceptions;
 
+import lombok.Getter;
+
+@Getter
 public class BadRequestException extends RuntimeException {
     private final ErrorCode errorCode;
     public BadRequestException(String message, ErrorCode errorCode)
@@ -7,8 +10,4 @@ public class BadRequestException extends RuntimeException {
         super(message);
         this.errorCode = errorCode;
     }
-    public String getErrorCode() {
-        return errorCode.getCode();
-    }
-
 }

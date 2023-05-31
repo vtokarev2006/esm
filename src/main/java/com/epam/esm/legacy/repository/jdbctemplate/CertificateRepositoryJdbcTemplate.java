@@ -171,7 +171,7 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
         certificate.setCreateDate(now);
         certificate.setLastUpdateDate(now);
 
-        final List<Tag> tagsInCertificate = certificate.getTags();
+        final Set<Tag> tagsInCertificate = certificate.getTags();
         final Map<Long, Tag> tagsInDB = fetchTagsInDbMap();
         final Set<Long> tagIdsInCertsHaveTags = Collections.emptySet();
         updateTagsInDb(certificate, tagsInCertificate, tagsInDB, tagIdsInCertsHaveTags);
@@ -196,7 +196,7 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
         Pair<String, MapSqlParameterSource> query = buildUpdateQuery(certificate);
         namedParameterJdbcTemplate.update(query.getValue0(), query.getValue1());
 
-        final List<Tag> tagsInCertificate = certificate.getTags();
+        final Set<Tag> tagsInCertificate = certificate.getTags();
         final Map<Long, Tag> tagsInDB = fetchTagsInDbMap();
         final Set<Long> tagIdsInCertsHaveTags = listForDbCert.get(0).getTags().stream().map(Tag::getId).collect(Collectors.toSet());
 
@@ -208,7 +208,7 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
         return tagRepository.fetchAll().stream().collect(Collectors.toMap(Tag::getId, Function.identity()));
     }
 
-    private void updateTagsInDb(Certificate newCertificate, List<Tag> tagsInCertificate, Map<Long, Tag> tagsInDB, Set<Long> tagIdsInCertsHaveTags) {
+    private void updateTagsInDb(Certificate newCertificate, Set<Tag> tagsInCertificate, Map<Long, Tag> tagsInDB, Set<Long> tagIdsInCertsHaveTags) {
         for (Tag tagInCert : tagsInCertificate) {
             if (tagsInDB.containsKey(tagInCert.getId())) {
                 Tag tagInDb = tagsInDB.get(tagInCert.getId());
@@ -233,7 +233,7 @@ public class CertificateRepositoryJdbcTemplate implements CertificateRepository 
         }
     }
 
-    private void deleteTags(Certificate newCertificate, List<Tag> tagsInCertificate, Set<Long> tagIdsInCertsHaveTags) {
+    private void deleteTags(Certificate newCertificate, Set<Tag> tagsInCertificate, Set<Long> tagIdsInCertsHaveTags) {
         Set<Long> tagIdsInCertificate = tagsInCertificate.stream().map(Tag::getId).collect(Collectors.toSet());
         Set<Long> tagIdsToRemove = new HashSet<>(tagIdsInCertsHaveTags);
         tagIdsToRemove.removeAll(tagIdsInCertificate);

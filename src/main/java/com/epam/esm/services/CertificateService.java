@@ -19,9 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -65,7 +64,7 @@ public class CertificateService {
     public Certificate create(Certificate certificate) {
         certificate.setId(null);
         if(certificate.getTags() == null) {
-            certificate.setTags(new ArrayList<>());
+            certificate.setTags(Collections.emptySet());
         } else {
             saveTags(certificate, certificate);
         }
@@ -73,8 +72,7 @@ public class CertificateService {
     }
 
     private void saveTags(Certificate certificate, Certificate certificateToSave) {
-        Set<String> excludedFieldsFromUpdate;
-        List<Tag> tagToSave = new ArrayList<>();
+        Set<Tag> tagToSave = new HashSet<>();
         for (Tag tag : certificate.getTags()) {
             if (tag.getId() == null) {
                 try {
@@ -85,7 +83,7 @@ public class CertificateService {
             } else {
                 Tag newTag = tagRepository.findById(tag.getId()).orElseThrow(() -> new ResourceDoesNotExistException("Tag doesnt exist, tagId = " + tag.getId(), ErrorCode.TagNotExist));
                 try {
-                    excludedFieldsFromUpdate = getNullPropertyNames(tag);
+                    Set<String> excludedFieldsFromUpdate = getNullPropertyNames(tag);
                     excludedFieldsFromUpdate.addAll(Set.of("id", "createDate", "lastUpdateDate"));
                     BeanUtils.copyProperties(tag, newTag, excludedFieldsFromUpdate.toArray(new String[0]));
                     tagToSave.add(newTag);

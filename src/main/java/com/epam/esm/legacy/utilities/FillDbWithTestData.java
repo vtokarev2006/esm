@@ -12,6 +12,7 @@ import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class FillDbWithTestData {
             Certificate certificate;
             Set<Integer> setOfTagsId = new Random().ints(1, 1001).distinct().limit(r.nextInt(r.nextInt(2) + 8) + 1).boxed().collect(Collectors.toSet());
 
-            List<Tag> tags = new ArrayList<>();
+            Set<Tag> tags = new HashSet<>();
 
             setOfTagsId.forEach(id -> tags.add(tagRepository.findById((long) id).orElseThrow()));
             certificate = Certificate.builder()

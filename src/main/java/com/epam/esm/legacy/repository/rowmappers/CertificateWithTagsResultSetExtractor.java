@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Deprecated
 public class CertificateWithTagsResultSetExtractor implements ResultSetExtractor<List<Certificate>> {
@@ -25,7 +27,7 @@ public class CertificateWithTagsResultSetExtractor implements ResultSetExtractor
                         .build();
                 certs.get(index).getTags().add(tag);
             } else {
-                List<Tag> tags = new ArrayList<>();
+                Set<Tag> tags = new HashSet<>();
                 long tag_id = rs.getLong("tag_id");
                 if (tag_id > 0) {
                     tags.add(Tag.builder()

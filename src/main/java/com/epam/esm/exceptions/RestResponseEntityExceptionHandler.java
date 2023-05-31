@@ -10,16 +10,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = TagDuplicateNameException.class)
     public ResponseEntity<ErrorMessage> handleTagDuplicateNameException(TagDuplicateNameException e) {
-        return new ResponseEntity<>(new ErrorMessage(e.getMessage(), e.getErrorCode()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ErrorMessage(e.getMessage(), e.getErrorCode().getCode()), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(value = BadRequestException.class)
     public ResponseEntity<ErrorMessage> handleBadRequestException(BadRequestException e) {
-        return new ResponseEntity<>(new ErrorMessage(e.getMessage(), e.getErrorCode()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorMessage(e.getMessage(), e.getErrorCode().getCode()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = ResourceDoesNotExistException.class)
     public ResponseEntity<ErrorMessage> handlerResourceDoesNotExistException(ResourceDoesNotExistException e) {
-        return new ResponseEntity<>(new ErrorMessage(e.getMessage(), e.getErrorCode()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorMessage(e.getMessage(), e.getErrorCode().getCode()), HttpStatus.NOT_FOUND);
     }
 }

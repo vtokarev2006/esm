@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -18,5 +18,5 @@ public class CertificateModel extends RepresentationModel<CertificateModel> {
     private Integer duration;
     private Instant createDate;
     private Instant lastUpdateDate;
-    private List<Tag> tags;
+    private Set<Tag> tags;
 }
