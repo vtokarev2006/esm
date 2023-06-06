@@ -31,7 +31,8 @@ public class OrderController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public PagedModel<OrderModel> fetchAllPageable(@PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
-        return pagedResourcesAssembler.toModel(orderService.findAllPageable(pageable), orderModelAssembler);
+        var orders = orderService.findAllPageable(pageable);
+        return pagedResourcesAssembler.toModel(orders, orderModelAssembler);
     }
 
     @GetMapping("/{id}")

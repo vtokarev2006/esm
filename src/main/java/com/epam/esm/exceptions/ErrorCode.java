@@ -9,7 +9,13 @@ public enum ErrorCode {
     NothingToUpdate("0060"),
     ObjectMalformed("0070"),
     UserNotExistInDtoObject("0080"),
-    CertificateNotExistInDtoObject("0090");
+    CertificateNotExistInDtoObject("0090"),
+    UserAlreadyExist("0100"),
+    BadCredentials("0110"),
+    InsufficientAuthentication("0120"),
+
+    AccessDenied("0130");
+
     private final String code;
 
     public String getCode() {
