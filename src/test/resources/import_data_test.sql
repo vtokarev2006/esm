@@ -11,17 +11,17 @@ VALUES ('Tag001', '2023-05-21 19:40:01', '2023-05-21 19:40:40'),
        ('Tag010', '2023-05-21 19:40:01', '2023-05-21 19:40:40'),
        ('Tag011', '2023-05-21 19:40:01', '2023-05-21 19:40:40');
 
-INSERT INTO users (email, password, create_date, last_update_date)
-VALUES ('voncile.ullrich@hotmail.com', '189dxyd2o', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('jess.huels@hotmail.com', '0qknyp719c2li', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('korey.ankunding@hotmail.com', 'cvy09fxmr78', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('felice.corkery@yahoo.com', 'wqw0juwr5f', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('dorsey.ward@yahoo.com', 'bqk276w5i', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('jackson.stanton@gmail.com', 'dpzt60oijpxwy', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('shavon.swift@yahoo.com', 'jf7w20v85crs1p', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('deeann.will@yahoo.com', 'c6oxf8uedte', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('davida.considine@gmail.com', 'aob5y1he', '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
-       ('amos.toy@gmail.com', '9fmy6pcyho4sa', '2023-05-21 19:41:45', '2023-05-21 19:41:54');
+INSERT INTO users (email, password, role, create_date, last_update_date)
+VALUES ('user@epam.com', '$2a$10$XiybX9/UZ6wpjYol0fc12utD/roMLhA7dAuOlzSYutZ/ET1HTqLBi', 'USER' ,'2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('admin@epam.com', '$2a$10$PLh5lihC5Nxg2Zj0iWN31OJDjUp4lRPc0.VEgun4WtB2rBkqnoEvi', 'ADMIN','2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('korey.ankunding@hotmail.com', 'cvy09fxmr78', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('felice.corkery@yahoo.com', 'wqw0juwr5f', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('dorsey.ward@yahoo.com', 'bqk276w5i', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('jackson.stanton@gmail.com', 'dpzt60oijpxwy', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('shavon.swift@yahoo.com', 'jf7w20v85crs1p', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('deeann.will@yahoo.com', 'c6oxf8uedte', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('davida.considine@gmail.com', 'aob5y1he', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54'),
+       ('amos.toy@gmail.com', '9fmy6pcyho4sa', 'USER' , '2023-05-21 19:41:45', '2023-05-21 19:41:54');
 
 INSERT INTO certificates (name, description, price, duration, create_date, last_update_date)
 VALUES ('Rick Kleiner', 'Paige Turner', 105.59, 3, '2023-05-01 19:05:13', '2023-05-01 19:05:15'),
