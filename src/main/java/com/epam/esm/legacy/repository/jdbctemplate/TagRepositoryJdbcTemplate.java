@@ -1,10 +1,12 @@
-package com.epam.esm.repository.mysql;
+package com.epam.esm.legacy.repository.jdbctemplate;
 
 import com.epam.esm.domain.Tag;
+import com.epam.esm.domain.dto.TagOrdersPriceDto;
 import com.epam.esm.exceptions.TagDuplicateNameException;
-import com.epam.esm.repository.TagRepository;
-import com.epam.esm.repository.rowmappers.TagRowMapper;
+import com.epam.esm.legacy.repository.TagRepository;
+import com.epam.esm.legacy.repository.rowmappers.TagRowMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -16,27 +18,26 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Deprecated
 @Repository
+@Profile("legacy")
 @RequiredArgsConstructor
-public class TagRepositoryImpl implements TagRepository {
-
+public class TagRepositoryJdbcTemplate implements TagRepository {
     private static final String SQL_GET_BY_ID = "SELECT * FROM tags WHERE id = ?";
     private static final String SQL_GET_BY_NAME = "SELECT * FROM tags WHERE name = ?";
     private static final String SQL_GET_ALL = "SELECT * FROM tags";
     private static final String SQL_INSERT = "INSERT INTO tags (name) values (?)";
     private static final String SQL_DELETE_BY_ID = "DELETE FROM tags WHERE id = ?";
-
     private static final String SQL_UPDATE_BY_ID = "UPDATE tags SET name = ? WHERE id = ?";
-
-    final private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Optional<Tag> get(long id) {
+    public Optional<Tag> fetchById(long id) {
         return Optional.ofNullable(jdbcTemplate.queryForObject(SQL_GET_BY_ID, new TagRowMapper(), id));
     }
 
     @Override
-    public List<Tag> getAll() {
+    public List<Tag> fetchAll() {
         return jdbcTemplate.query(SQL_GET_ALL, new TagRowMapper());
     }
 
@@ -57,8 +58,8 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public boolean update(Tag tag) {
-        return jdbcTemplate.update(SQL_UPDATE_BY_ID, tag.getName(), tag.getId()) > 0;
+    public void update(Tag tag) {
+        jdbcTemplate.update(SQL_UPDATE_BY_ID, tag.getName(), tag.getId());
     }
 
     @Override
@@ -67,8 +68,12 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public Tag findByName(String name) {
+    public Tag fetchByName(String name) {
         return jdbcTemplate.queryForObject(SQL_GET_BY_NAME, new TagRowMapper(), name);
     }
 
+    @Override
+    public List<TagOrdersPriceDto> fetchTagSummaryByUserId(long userId) {
+        throw new UnsupportedOperationException("TagRepositoryJdbcTemplate - getTagWithMaxSumOrdersPrice");
+    }
 }

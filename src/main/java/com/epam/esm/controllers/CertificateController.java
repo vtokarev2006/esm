@@ -1,68 +1,82 @@
 package com.epam.esm.controllers;
 
 import com.epam.esm.domain.Certificate;
-import com.epam.esm.exceptions.ResourceDoesNotExistException;
+import com.epam.esm.hateoas.CertificateModel;
+import com.epam.esm.hateoas.CertificateModelAssembler;
 import com.epam.esm.services.CertificateService;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpHeaders;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
-@RequestMapping("api/v1/certificates")
+@RequestMapping("api/v2/certificates")
+@RequiredArgsConstructor
 public class CertificateController {
     private final CertificateService certificateService;
-
-    public CertificateController(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
+    private final CertificateModelAssembler certificateModelAssembler;
+    private final PagedResourcesAssembler<Certificate> pagedResourcesAssembler;
 
     @GetMapping
-    public List<Certificate> getAll(@RequestParam Optional<String> tagName,
-                                    @RequestParam Optional<String> name,
-                                    @RequestParam Optional<String> description,
-                                    @RequestParam Optional<String> orderBy,
-                                    @RequestParam(defaultValue = "ASC") String orderDirection) {
-        return certificateService.getAll(tagName, name, description, orderBy, orderDirection);
+    @ResponseStatus(HttpStatus.OK)
+    public PagedModel<CertificateModel> fetchCertificatesBySearchParamsPageable(@RequestParam Optional<String> name,
+                                                                                @RequestParam Optional<String> description,
+                                                                                @RequestParam Optional<Set<String>> tagNames,
+                                                                                @PageableDefault(sort = {"id"}, direction = Sort.Direction.ASC, value = 30) Pageable pageable) {
+
+        Page<Certificate> certificatePage = certificateService.findCertificatesByParams(name, description, tagNames.orElse(Collections.emptySet()), pageable);
+        return pagedResourcesAssembler.toModel(certificatePage, certificateModelAssembler);
     }
 
     @GetMapping("/{id}")
-    public Certificate getById(@PathVariable long id) {
-        try {
-            return certificateService.get(id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new ResourceDoesNotExistException("Certificate not found, certificateId = " + id);
-        }
+    @ResponseStatus(HttpStatus.OK)
+    public CertificateModel fetchById(@PathVariable long id) {
+        return modelFromCertificate(certificateService.findById(id));
     }
 
-    @PutMapping
-    public ResponseEntity<String> update(@RequestBody Certificate certificate) {
-        if (!certificateService.update(certificate))
-            throw new ResourceDoesNotExistException("Certificate not found, certificateId = " + certificate.getId());
-        return new ResponseEntity<>(HttpStatus.OK);
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public CertificateModel updateById(@PathVariable long id, @RequestBody Certificate certificate) {
+        return modelFromCertificate(certificateService.updateById(id, certificate));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable long id) {
-        if (!certificateService.delete(id))
-            throw new ResourceDoesNotExistException("Certificate not found, certificateId = " + id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable long id) {
+        certificateService.delete(id);
     }
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody Certificate certificate) {
-        Certificate newCert = certificateService.create(certificate);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(newCert.getId())
-                .toUri();
-        return ResponseEntity.status(HttpStatus.CREATED).header(HttpHeaders.LOCATION, String.valueOf(location)).build();
+    @ResponseStatus(HttpStatus.CREATED)
+    public CertificateModel create(@RequestBody Certificate certificate) {
+        return modelFromCertificate(certificateService.create(certificate));
+    }
+
+    private CertificateModel modelFromCertificate(Certificate certificate) {
+        CertificateModel certificateModel = certificateModelAssembler.toModel(certificate);
+        Link selfLink = linkTo(CertificateController.class).slash(certificate.getId()).withSelfRel();
+        certificateModel.add(selfLink);
+        return certificateModel;
     }
 }
