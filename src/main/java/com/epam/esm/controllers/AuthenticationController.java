@@ -1,8 +1,8 @@
 package com.epam.esm.controllers;
 
-import com.epam.esm.domain.User;
 import com.epam.esm.domain.dto.AuthenticationRequestDto;
 import com.epam.esm.domain.dto.AuthenticationResponseDto;
+import com.epam.esm.domain.dto.RegisterUserDto;
 import com.epam.esm.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +21,8 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.OK)
-    public AuthenticationResponseDto register(@RequestBody User user) {
-        return authenticationService.register(user);
+    public AuthenticationResponseDto register(@RequestBody RegisterUserDto registerUserDto) {
+        return authenticationService.register(registerUserDto);
     }
 
     @PostMapping("/authenticate")

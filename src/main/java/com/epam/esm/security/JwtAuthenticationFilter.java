@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
@@ -27,7 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
@@ -37,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         try {
-//            throw new AccessDeniedException("!!!");
             String token = header.substring(7);
             String userEmail = jwtService.extractUserName(token);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -52,11 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-//            handlerExceptionResolver.resolveException(request, response, null, e);
-        } finally {
-//            filterChain.doFilter(request, response);
+        } catch (Exception ignored) {
         }
         filterChain.doFilter(request, response);
 

@@ -4,11 +4,14 @@ import com.epam.esm.domain.Role;
 import com.epam.esm.domain.User;
 import com.epam.esm.domain.dto.AuthenticationRequestDto;
 import com.epam.esm.domain.dto.AuthenticationResponseDto;
+import com.epam.esm.domain.dto.RegisterUserDto;
+import com.epam.esm.exceptions.BadRequestException;
 import com.epam.esm.exceptions.ErrorCode;
 import com.epam.esm.exceptions.ResourceDoesNotExistException;
 import com.epam.esm.exceptions.UserAlreadyExistException;
 import com.epam.esm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,13 +36,18 @@ public class AuthenticationService {
         return new AuthenticationResponseDto(token);
     }
 
-    public AuthenticationResponseDto register(User user) {
-        user.setId(null);
-        user.setRole(Role.USER);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new UserAlreadyExistException(format("User with email: %s, already exist", user.getEmail()));
+    public AuthenticationResponseDto register(RegisterUserDto registerUserDto) {
+        if(Strings.isEmpty(registerUserDto.getEmail()) || Strings.isEmpty(registerUserDto.getPassword())) {
+            throw new BadRequestException("User register request malformed, email or password is empty", ErrorCode.ObjectMalformed);
         }
+        if (userRepository.findByEmail(registerUserDto.getEmail()).isPresent()) {
+            throw new UserAlreadyExistException(format("User with email: %s, already exist", registerUserDto.getEmail()));
+        }
+        User user = User.builder()
+                .email(registerUserDto.getEmail())
+                .password(passwordEncoder.encode(registerUserDto.getPassword()))
+                .role(Role.USER)
+                .build();
         user = userRepository.save(user);
         String token = jwtService.generateToken(user);
         return new AuthenticationResponseDto(token);
