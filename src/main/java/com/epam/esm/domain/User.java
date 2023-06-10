@@ -34,6 +34,7 @@ public class User extends BaseEntity implements UserDetails, Serializable {
     private String email;
     private String password;
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
     @JsonIgnore

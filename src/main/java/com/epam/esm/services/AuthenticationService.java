@@ -30,9 +30,11 @@ public class AuthenticationService {
     public AuthenticationResponseDto authenticate(AuthenticationRequestDto authenticationRequestDto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequestDto.getEmail(), authenticationRequestDto.getPassword()));
+
         User user = userRepository.findByEmail(authenticationRequestDto.getEmail())
                 .orElseThrow(() -> new ResourceDoesNotExistException(format("User with email: %s, not found", authenticationRequestDto.getEmail()), ErrorCode.UserNotExist));
-        String token = jwtService.generateToken(user);
+
+        String token = jwtService.generateToken(user.getRole().name());
         return new AuthenticationResponseDto(token);
     }
 
@@ -49,7 +51,7 @@ public class AuthenticationService {
                 .role(Role.USER)
                 .build();
         user = userRepository.save(user);
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user.getRole().name());
         return new AuthenticationResponseDto(token);
     }
 }
