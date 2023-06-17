@@ -18,7 +18,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-        System.out.println(authException.getClass().getName());
         resolver.resolveException(request, response, null, authException);
     }
 }
