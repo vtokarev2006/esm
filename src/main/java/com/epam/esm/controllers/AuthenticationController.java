@@ -6,6 +6,7 @@ import com.epam.esm.domain.dto.RegisterUserDto;
 import com.epam.esm.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,4 +31,11 @@ public class AuthenticationController {
     public AuthenticationResponseDto authenticate(@RequestBody AuthenticationRequestDto authenticationRequestDto) {
         return authenticationService.authenticate(authenticationRequestDto);
     }
+
+    @GetMapping("/test")
+    @ResponseStatus(HttpStatus.OK)
+    public String test() {
+        return "'as]peklrfiopwshb";
+    }
+
 }
