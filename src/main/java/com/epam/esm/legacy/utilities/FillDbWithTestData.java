@@ -27,8 +27,10 @@ public class FillDbWithTestData {
     private final CertificateRepository certificateRepository;
     private final OrderRepository orderRepositorySpringData;
 
+    private final Random r = new Random();
+
+
     void addOrders() {
-        Random r = new Random();
         List<User> users = userRepository.findAll();
         List<Certificate> certificates = certificateRepository.findAll();
 
@@ -51,14 +53,13 @@ public class FillDbWithTestData {
     }
 
     void addCertificates() {
-        Random r = new Random();
         IntStream.rangeClosed(1, 7).forEach(i -> {
             Certificate certificate;
-            Set<Integer> setOfTagsId = new Random().ints(1, 1001).distinct().limit(r.nextInt(r.nextInt(2) + 8) + 1).boxed().collect(Collectors.toSet());
+            Set<Long> setOfTagsId = r.longs(1, 1001).distinct().limit(r.nextInt(r.nextInt(2) + 8) + 1L).boxed().collect(Collectors.toSet());
 
             Set<Tag> tags = new HashSet<>();
 
-            setOfTagsId.forEach(id -> tags.add(tagRepository.findById((long) id).orElseThrow()));
+            setOfTagsId.forEach(id -> tags.add(tagRepository.findById(id).orElseThrow()));
             certificate = Certificate.builder()
                     .name(faker.funnyName().name())
                     .tags(tags)

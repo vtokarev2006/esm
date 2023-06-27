@@ -28,7 +28,7 @@ public class CertificateCustomRepositoryImplTests {
     CertificateRepository certificateRepository;
 
     @ParameterizedTest
-    @MethodSource("testData")
+    @MethodSource("testDataStream")
     void findCertificatesByNameDescriptionTagNames_test(Optional<String> name,
                                                         Optional<String> description,
                                                         Set<String> tagNames,
@@ -51,7 +51,7 @@ public class CertificateCustomRepositoryImplTests {
         assertEquals(certificate.getTags(), certificateFromDb.getTags());
     }
 
-    public static Stream<Arguments> testData() {
+    public static Stream<Arguments> testDataStream() {
         return Stream.of(
                 arguments(Optional.empty(),
                         Optional.empty(),
